@@ -1,0 +1,71 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #f2f3f1;
+}
+
+body {
+  font-family: "IBM Plex Sans", "Helvetica Neue", sans-serif;
+  color: #22282c;
+}
+
+#root {
+  height: 100vh;
+}
+
+a {
+  color: #34698c;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #24506e;
+  text-decoration: underline;
+}
+
+input:focus,
+button:focus {
+  outline: 2px solid #34698c;
+  outline-offset: 1px;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+button {
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+.row-hover:hover {
+  background: #f6f8f5;
+}
+
+.card-hover:hover {
+  border-color: #b9c0bb !important;
+}
+
+.nav-item:hover {
+  color: #ffffff !important;
+}
+
+.link-plain {
+  color: inherit;
+}
+.link-plain:hover {
+  color: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #c9cfc9;
+  border-radius: 5px;
+}

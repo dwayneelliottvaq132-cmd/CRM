@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; background: #F2F3F1; }
+  body { font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif; color: #22282C; }
+  a { color: #34698C; text-decoration: none; }
+  a:hover { color: #24506E; text-decoration: underline; }
+  * { box-sizing: border-box; }
+  input:focus, button:focus { outline: 2px solid #34698C; outline-offset: 1px; }
+</style>
+</helmet>
+
+<div style="display: flex; height: 100vh; overflow: hidden;">
+
+  <!-- ============ SIDEBAR ============ -->
+  <nav style="width: 216px; flex-shrink: 0; background: #1B2228; display: flex; flex-direction: column; overflow-y: auto;">
+    <div style="padding: 18px 16px 14px 16px; border-bottom: 1px solid #2A333B;">
+      <div style="font-size: 15px; font-weight: 700; color: #FFFFFF; letter-spacing: 0.02em;">SURFTEC ERP</div>
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #6E7B84; margin-top: 3px;">NADCAP · AS9100D · ITAR</div>
+    </div>
+    <div style="padding: 8px 0; flex: 1;">
+      <sc-for list="{{ navItems }}" as="nv" hint-placeholder-count="8">
+        <div onClick="{{ nv.go }}" style="display: flex; align-items: center; gap: 10px; padding: 8px 16px; cursor: pointer; font-size: 13px; font-weight: {{ nv.weight }}; color: {{ nv.color }}; background: {{ nv.bg }}; border-left: 3px solid {{ nv.edge }};" style-hover="color: #FFFFFF;">
+          <span style="width: 18px; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: {{ nv.iconColor }};">{{ nv.icon }}</span>
+          <span>{{ nv.label }}</span>
+          <span style="margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 10px; background: {{ nv.badgeBg }}; color: {{ nv.badgeColor }}; padding: 1px 6px; border-radius: 8px;">{{ nv.badge }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="padding: 12px 16px; border-top: 1px solid #2A333B; display: flex; align-items: center; gap: 10px;">
+      <div style="width: 30px; height: 30px; border-radius: 50%; background: #34698C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600;">MT</div>
+      <div>
+        <div style="font-size: 12px; font-weight: 600; color: #E8ECEE;">M. Torres</div>
+        <div style="font-size: 10px; color: #6E7B84;">Quality Manager</div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============ MAIN ============ -->
+  <main style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+
+    <sc-if value="{{ showItar }}" hint-placeholder-val="{{ true }}">
+      <div style="background: #3B2F1E; color: #E3C98A; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-align: center; padding: 5px 0; flex-shrink: 0;">ITAR CONTROLLED — U.S. PERSONS ONLY · EXPORT CONTROLLED TECHNICAL DATA</div>
+    </sc-if>
+
+    <header style="display: flex; align-items: center; gap: 16px; padding: 14px 24px; background: #FFFFFF; border-bottom: 1px solid #DDE0DC; flex-shrink: 0;">
+      <h1 style="margin: 0; font-size: 18px; font-weight: 700;">{{ screenTitle }}</h1>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #7A848A;">{{ screenSub }}</span>
+      <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+        <input placeholder="Search jobs, POs, parts…" style="border: 1px solid #DDE0DC; border-radius: 5px; padding: 7px 12px; font-size: 12px; width: 240px; font-family: 'IBM Plex Sans', sans-serif;">
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #7A848A;">Thu Jul 9, 2026</div>
+      </div>
+    </header>
+
+    <div style="flex: 1; overflow-y: auto; padding: 20px 24px;">
+
+      <!-- ============ DASHBOARD ============ -->
+      <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+        <section data-screen-label="Dashboard">
+          <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;">
+            <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="6">
+              <div onClick="{{ k.go }}" style="background: #FFFFFF; border: 1px solid #DDE0DC; border-top: 3px solid {{ k.edge }}; border-radius: 6px; padding: 12px 14px; cursor: pointer;" style-hover="border-color: #B9C0BB;">
+                <div style="font-size: 26px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; color: {{ k.numColor }};">{{ k.value }}</div>
+                <div style="font-size: 11px; color: #5E686E; margin-top: 2px; text-wrap: pretty;">{{ k.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; margin-top: 16px;">
+            <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 6px;">
+              <div style="display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #EAECE8;">
+                <div style="font-size: 13px; font-weight: 700;">Hot Jobs — Due ≤ 48 hrs</div>
+                <a href="#" onClick="{{ goTravelers }}" style="margin-left: auto; font-size: 12px;">All travelers →</a>
+              </div>
+              <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                <thead>
+                  <tr>
+                    <th style="text-align: left; padding: 8px 16px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Job</th>
+                    <th style="text-align: left; padding: 8px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Customer</th>
+                    <th style="text-align: left; padding: 8px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Process</th>
+                    <th style="text-align: left; padding: 8px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Current Op</th>
+                    <th style="text-align: left; padding: 8px 16px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Due</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <sc-for list="{{ hotJobs }}" as="j" hint-placeholder-count="5">
+                    <tr onClick="{{ j.open }}" style="border-top: 1px solid #EAECE8; cursor: pointer;" style-hover="background: #F6F8F5;">
+                      <td style="padding: 9px 16px; font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #34698C;">{{ j.id }}</td>
+                      <td style="padding: 9px 8px;">{{ j.customer }}</td>
+                      <td style="padding: 9px 8px;">{{ j.process }}</td>
+                      <td style="padding: 9px 8px; color: #5E686E;">{{ j.currentOp }}</td>
+                      <td style="padding: 9px 16px;"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; color: {{ j.dueColor }};">{{ j.due }}</span></td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 6px;">
+                <div style="display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #EAECE8;">
+                  <div style="font-size: 13px; font-weight: 700;">Tank Alerts</div>
+                  <a href="#" onClick="{{ goChemistry }}" style="margin-left: auto; font-size: 12px;">Chemistry →</a>
+                </div>
+                <sc-for list="{{ tankAlerts }}" as="t" hint-placeholder-count="3">
+                  <div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 16px; border-top: 1px solid #EAECE8;">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: {{ t.dot }}; margin-top: 5px; flex-shrink: 0;"></span>
+                    <div>
+                      <div style="font-size: 12px; font-weight: 600;">{{ t.title }}</div>
+                      <div style="font-size: 11px; color: #5E686E; text-wrap: pretty;">{{ t.detail }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 6px;">
+                <div style="padding: 12px 16px; border-bottom: 1px solid #EAECE8; font-size: 13px; font-weight: 700;">Compliance Pulse</div>
+                <sc-for list="{{ pulse }}" as="p" hint-placeholder-count="4">
+                  <div style="display: flex; align-items: center; padding: 9px 16px; border-top: 1px solid #EAECE8; font-size: 12px;">
+                    <span>{{ p.label }}</span>
+                    <span style="margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: {{ p.color }};">{{ p.value }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </section>
+      </sc-if>
+
+      <!-- ============ ORDERS & QUOTES ============ -->
+      <sc-if value="{{ isOrders }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Orders & Quotes">
+          <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+            <button style="background: #34698C; color: #FFFFFF; border: none; border-radius: 5px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;">+ New Quote</button>
+            <button style="background: #FFFFFF; color: #22282C; border: 1px solid #DDE0DC; border-radius: 5px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;">+ New Order</button>
+            <div style="margin-left: auto; font-size: 12px; color: #5E686E; align-self: center;">Quotes auto-price from spec + surface area + qty; converting a quote creates the job and traveler in one step.</div>
+          </div>
+          <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 6px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+              <thead>
+                <tr>
+                  <th style="text-align: left; padding: 10px 16px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Order</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Customer / PO</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Part</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Spec</th>
+                  <th style="text-align: right; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Qty</th>
+                  <th style="text-align: right; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Value</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Due</th>
+                  <th style="text-align: left; padding: 10px 16px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ orders }}" as="o" hint-placeholder-count="8">
+                  <tr style="border-top: 1px solid #EAECE8;" style-hover="background: #F6F8F5;">
+                    <td style="padding: 9px 16px; font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #34698C;">{{ o.id }}</td>
+                    <td style="padding: 9px 8px;"><div style="font-weight: 600;">{{ o.customer }}</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #7A848A;">{{ o.po }}</div></td>
+                    <td style="padding: 9px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 11px;">{{ o.part }}</td>
+                    <td style="padding: 9px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #5E686E;">{{ o.spec }}</td>
+                    <td style="padding: 9px 8px; text-align: right; font-family: 'IBM Plex Mono', monospace;">{{ o.qty }}</td>
+                    <td style="padding: 9px 8px; text-align: right; font-family: 'IBM Plex Mono', monospace;">{{ o.value }}</td>
+                    <td style="padding: 9px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 11px;">{{ o.due }}</td>
+                    <td style="padding: 9px 16px;"><span style="font-size: 11px; font-weight: 600; background: {{ o.chipBg }}; color: {{ o.chipColor }}; padding: 2px 8px; border-radius: 9px;">{{ o.status }}</span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </sc-if>
+
+      <!-- ============ TRAVELERS ============ -->
+      <sc-if value="{{ isTravelers }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Travelers" style="display: grid; grid-template-columns: 300px 1fr; gap: 16px; align-items: start;">
+          <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 6px;">
+            <div style="padding: 12px 14px; border-bottom: 1px solid #EAECE8; font-size: 13px; font-weight: 700;">Active Jobs</div>
+            <sc-for list="{{ jobList }}" as="jl" hint-placeholder-count="6">
+              <div onClick="{{ jl.select }}" style="padding: 10px 14px; border-top: 1px solid #EAECE8; cursor: pointer; background: {{ jl.bg }}; border-left: 3px solid {{ jl.edge }};" style-hover="background: #F6F8F5;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; color: #34698C;">{{ jl.id }}</span>
+                  <span style="font-size: 10px; font-weight: 600; background: {{ jl.chipBg }}; color: {{ jl.chipColor }}; padding: 1px 6px; border-radius: 8px;">{{ jl.status }}</span>
+                  <span style="margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #7A848A;">{{ jl.pct }}</span>
+                </div>
+                <div style="font-size: 11px; color: #5E686E; margin-top: 3px;">{{ jl.customer }} · {{ jl.process }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 6px;">
+            <div style="padding: 16px 20px; border-bottom: 1px solid #EAECE8;">
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 17px; font-weight: 700;">{{ selJob.id }}</span>
+                <span style="font-size: 11px; font-weight: 600; background: {{ selJob.chipBg }}; color: {{ selJob.chipColor }}; padding: 2px 9px; border-radius: 9px;">{{ selJob.status }}</span>
+                <sc-if value="{{ selJob.itar }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.06em; background: #3B2F1E; color: #E3C98A; padding: 2px 8px; border-radius: 3px;">ITAR</span>
+                </sc-if>
+                <div style="margin-left: auto; display: flex; gap: 8px;">
+                  <button style="background: #FFFFFF; color: #22282C; border: 1px solid #DDE0DC; border-radius: 5px; padding: 7px 12px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;">Print Barcode</button>
+                  <button onClick="{{ goShopFloor }}" style="background: #34698C; color: #FFFFFF; border: none; border-radius: 5px; padding: 7px 12px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;">Open on Shop Floor →</button>
+                </div>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px;">
+                <div><div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: #7A848A; font-weight: 600;">Customer / PO</div><div style="font-size: 12px; font-weight: 600; margin-top: 2px;">{{ selJob.customer }}</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #5E686E;">{{ selJob.po }}</div></div>
+                <div><div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: #7A848A; font-weight: 600;">Part / Rev</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; margin-top: 2px;">{{ selJob.part }}</div><div style="font-size: 11px; color: #5E686E;">Qty {{ selJob.qty }} · Lot {{ selJob.lot }}</div></div>
+                <div><div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: #7A848A; font-weight: 600;">Governing Spec</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; margin-top: 2px; color: #34698C;">{{ selJob.spec }}</div><div style="font-size: 11px; color: #5E686E;">{{ selJob.specNote }}</div></div>
+                <div><div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: #7A848A; font-weight: 600;">Due Date</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; margin-top: 2px; color: {{ selJob.dueColor }};">{{ selJob.due }}</div><div style="font-size: 11px; color: #5E686E;">{{ selJob.dueNote }}</div></div>
+              </div>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+              <thead>
+                <tr>
+                  <th style="text-align: left; padding: 9px 20px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600; width: 40px;">Op</th>
+                  <th style="text-align: left; padding: 9px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Operation</th>
+                  <th style="text-align: left; padding: 9px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Parameters</th>
+                  <th style="text-align: left; padding: 9px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Work Instruction</th>
+                  <th style="text-align: left; padding: 9px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Sign-off</th>
+                  <th style="text-align: left; padding: 9px 20px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ selOps }}" as="op" hint-placeholder-count="8">
+                  <tr style="border-top: 1px solid #EAECE8; background: {{ op.bg }};">
+                    <td style="padding: 9px 20px; font-family: 'IBM Plex Mono', monospace; color: #7A848A;">{{ op.num }}</td>
+                    <td style="padding: 9px 8px; font-weight: 600;">{{ op.name }}</td>
+                    <td style="padding: 9px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #5E686E;">{{ op.params }}</td>
+                    <td style="padding: 9px 8px;"><a href="#">{{ op.wi }}</a></td>
+                    <td style="padding: 9px 8px; font-size: 11px;"><span style="font-family: 'IBM Plex Mono', monospace; color: {{ op.signColor }};">{{ op.sign }}</span></td>
+                    <td style="padding: 9px 20px;"><span style="font-size: 11px; font-weight: 600; background: {{ op.chipBg }}; color: {{ op.chipColor }}; padding: 2px 8px; border-radius: 9px;">{{ op.status }}</span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </sc-if>
+
+      <!-- ============ SHOP FLOOR ============ -->
+      <sc-if value="{{ isShopFloor }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Shop Floor" style="max-width: 860px; margin: 0 auto;">
+          <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 8px; overflow: hidden;">
+            <div style="display: flex; align-items: center; gap: 12px; padding: 16px 24px; background: #1B2228;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 700; color: #FFFFFF;">{{ selJob.id }}</span>
+              <span style="font-size: 13px; color: #9BA6AD;">{{ selJob.customer }} · {{ selJob.part }} · Qty {{ selJob.qty }}</span>
+              <sc-if value="{{ selJob.itar }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.06em; background: #3B2F1E; color: #E3C98A; padding: 3px 8px; border-radius: 3px;">ITAR</span>
+              </sc-if>
+              <span style="margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #9BA6AD;">Op {{ floorOp.num }} of {{ floorOpCount }}</span>
+            </div>
+
+            <div style="padding: 24px;">
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #7A848A; font-weight: 600;">Current Operation</div>
+              <div style="font-size: 30px; font-weight: 700; margin-top: 4px;">{{ floorOp.name }}</div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px;">
+                <div style="background: #F6F8F5; border: 1px solid #EAECE8; border-radius: 6px; padding: 12px 14px;">
+                  <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: #7A848A; font-weight: 600;">Parameters</div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; margin-top: 4px; text-wrap: pretty;">{{ floorOp.params }}</div>
+                </div>
+                <div style="background: #F6F8F5; border: 1px solid #EAECE8; border-radius: 6px; padding: 12px 14px;">
+                  <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: #7A848A; font-weight: 600;">Work Instruction</div>
+                  <div style="margin-top: 4px;"><a href="#" style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600;">{{ floorOp.wi }}</a></div>
+                </div>
+                <div style="background: #F6F8F5; border: 1px solid #EAECE8; border-radius: 6px; padding: 12px 14px;">
+                  <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: #7A848A; font-weight: 600;">Governing Spec</div>
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; margin-top: 4px; color: #34698C;">{{ selJob.spec }}</div>
+                </div>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 14px; margin-top: 24px; padding: 16px; background: #F6F8F5; border: 1px solid #EAECE8; border-radius: 8px;">
+                <div style="flex: 1;">
+                  <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: #7A848A; font-weight: 600; margin-bottom: 6px;">Operator PIN</div>
+                  <input value="{{ pin }}" onChange="{{ setPin }}" type="password" placeholder="••••" maxLength="6" style="border: 1px solid #C9CFC9; border-radius: 6px; padding: 12px 14px; font-size: 20px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.3em; width: 150px;">
+                  <span style="font-size: 12px; color: {{ pinMsgColor }}; margin-left: 12px;">{{ pinMsg }}</span>
+                </div>
+                <button onClick="{{ startOp }}" style="min-height: 56px; padding: 0 28px; font-size: 16px; font-weight: 700; border-radius: 8px; border: 1px solid {{ startBorder }}; background: {{ startBg }}; color: {{ startColor }}; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;">{{ startLabel }}</button>
+                <button onClick="{{ completeOp }}" style="min-height: 56px; padding: 0 28px; font-size: 16px; font-weight: 700; border-radius: 8px; border: none; background: {{ completeBg }}; color: #FFFFFF; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;">Sign Off &amp; Complete ✓</button>
+              </div>
+              <div style="font-size: 11px; color: #7A848A; margin-top: 10px; text-wrap: pretty;">Sign-off records operator ID, timestamp, and actual process parameters against this operation — this is the paperless traveler record used for NADCAP job audits.</div>
+            </div>
+
+            <div style="border-top: 1px solid #EAECE8; padding: 14px 24px;">
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: #7A848A; font-weight: 600; margin-bottom: 8px;">Route Progress</div>
+              <div style="display: flex; gap: 6px;">
+                <sc-for list="{{ routeDots }}" as="d" hint-placeholder-count="8">
+                  <div title="{{ d.name }}" style="flex: 1; height: 8px; border-radius: 4px; background: {{ d.color }};"></div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </section>
+      </sc-if>
+
+      <!-- ============ CHEMISTRY ============ -->
+      <sc-if value="{{ isChemistry }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Bath Chemistry">
+          <div style="display: flex; gap: 8px; margin-bottom: 14px; align-items: center;">
+            <button style="background: #34698C; color: #FFFFFF; border: none; border-radius: 5px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;">+ Log Analysis</button>
+            <button style="background: #FFFFFF; color: #22282C; border: 1px solid #DDE0DC; border-radius: 5px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;">+ Record Addition</button>
+            <div style="margin-left: auto; font-size: 12px; color: #5E686E;">Out-of-limit results auto-hold affected tanks and block traveler sign-offs on them.</div>
+          </div>
+          <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 6px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+              <thead>
+                <tr>
+                  <th style="text-align: left; padding: 10px 16px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Tank</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Solution</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Parameter</th>
+                  <th style="text-align: right; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Last Result</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Control Limits</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Analyzed</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Next Due</th>
+                  <th style="text-align: left; padding: 10px 16px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ tanks }}" as="t" hint-placeholder-count="8">
+                  <tr style="border-top: 1px solid #EAECE8; background: {{ t.bg }};">
+                    <td style="padding: 9px 16px; font-family: 'IBM Plex Mono', monospace; font-weight: 600;">{{ t.tank }}</td>
+                    <td style="padding: 9px 8px; font-weight: 600;">{{ t.solution }}</td>
+                    <td style="padding: 9px 8px; color: #5E686E;">{{ t.param }}</td>
+                    <td style="padding: 9px 8px; text-align: right; font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: {{ t.resultColor }};">{{ t.result }}</td>
+                    <td style="padding: 9px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #7A848A;">{{ t.limits }}</td>
+                    <td style="padding: 9px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 11px;">{{ t.analyzed }}</td>
+                    <td style="padding: 9px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: {{ t.dueColor }};">{{ t.nextDue }}</td>
+                    <td style="padding: 9px 16px;"><span style="font-size: 11px; font-weight: 600; background: {{ t.chipBg }}; color: {{ t.chipColor }}; padding: 2px 8px; border-radius: 9px;">{{ t.status }}</span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </sc-if>
+
+      <!-- ============ COMPLIANCE ============ -->
+      <sc-if value="{{ isCompliance }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Compliance" style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; align-items: start;">
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 6px;">
+              <div style="display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #EAECE8;">
+                <div style="font-size: 13px; font-weight: 700;">Nonconformance Reports</div>
+                <button style="margin-left: auto; background: #34698C; color: #FFFFFF; border: none; border-radius: 5px; padding: 6px 12px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;">+ New NCR</button>
+              </div>
+              <sc-for list="{{ ncrs }}" as="n" hint-placeholder-count="4">
+                <div style="padding: 11px 16px; border-top: 1px solid #EAECE8;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; color: #34698C;">{{ n.id }}</span>
+                    <span style="font-size: 10px; font-weight: 600; background: {{ n.chipBg }}; color: {{ n.chipColor }}; padding: 1px 7px; border-radius: 8px;">{{ n.disposition }}</span>
+                    <span style="margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #7A848A;">{{ n.job }} · {{ n.date }}</span>
+                  </div>
+                  <div style="font-size: 12px; margin-top: 4px; text-wrap: pretty;">{{ n.desc }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 6px;">
+              <div style="padding: 12px 16px; border-bottom: 1px solid #EAECE8; font-size: 13px; font-weight: 700;">Corrective Actions (CAPA)</div>
+              <sc-for list="{{ capas }}" as="c" hint-placeholder-count="3">
+                <div style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-top: 1px solid #EAECE8; font-size: 12px;">
+                  <span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #34698C;">{{ c.id }}</span>
+                  <span style="flex: 1; text-wrap: pretty;">{{ c.desc }}</span>
+                  <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: {{ c.dueColor }};">{{ c.due }}</span>
+                  <span style="font-size: 10px; font-weight: 600; background: {{ c.chipBg }}; color: {{ c.chipColor }}; padding: 1px 7px; border-radius: 8px;">{{ c.phase }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 6px;">
+            <div style="padding: 12px 16px; border-bottom: 1px solid #EAECE8; font-size: 13px; font-weight: 700;">Audit Readiness</div>
+            <sc-for list="{{ audits }}" as="a" hint-placeholder-count="4">
+              <div style="padding: 12px 16px; border-top: 1px solid #EAECE8;">
+                <div style="display: flex; align-items: center; font-size: 12px;">
+                  <span style="font-weight: 600;">{{ a.name }}</span>
+                  <span style="margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: {{ a.color }};">{{ a.pct }}</span>
+                </div>
+                <div style="height: 6px; background: #EAECE8; border-radius: 3px; margin-top: 7px;">
+                  <div style="height: 6px; border-radius: 3px; background: {{ a.color }}; width: {{ a.pct }};"></div>
+                </div>
+                <div style="font-size: 11px; color: #7A848A; margin-top: 5px;">{{ a.note }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </sc-if>
+
+      <!-- ============ CERTS ============ -->
+      <sc-if value="{{ isCerts }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Certs" style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 16px; align-items: start;">
+          <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 6px;">
+            <div style="padding: 12px 16px; border-bottom: 1px solid #EAECE8; font-size: 13px; font-weight: 700;">Awaiting Certification</div>
+            <sc-for list="{{ certQueue }}" as="cq" hint-placeholder-count="4">
+              <div style="display: flex; align-items: center; gap: 10px; padding: 11px 16px; border-top: 1px solid #EAECE8; font-size: 12px;">
+                <span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #34698C;">{{ cq.id }}</span>
+                <span style="flex: 1;">{{ cq.customer }} · {{ cq.process }}</span>
+                <span style="font-size: 10px; font-weight: 600; background: {{ cq.chipBg }}; color: {{ cq.chipColor }}; padding: 1px 7px; border-radius: 8px;">{{ cq.state }}</span>
+              </div>
+            </sc-for>
+            <div style="padding: 12px 16px; border-top: 1px solid #EAECE8; font-size: 11px; color: #7A848A; text-wrap: pretty;">C of C generates automatically from traveler sign-offs + bath analysis records. It cannot be issued if any operation is unsigned or a linked tank was out of control during processing.</div>
+          </div>
+          <div style="background: #FFFFFF; border: 1px solid #C9CFC9; border-radius: 4px; padding: 32px 36px; font-size: 12px; box-shadow: 0 1px 4px rgba(20,30,35,0.08);">
+            <div style="display: flex; align-items: baseline; justify-content: space-between; border-bottom: 2px solid #22282C; padding-bottom: 10px;">
+              <div>
+                <div style="font-size: 16px; font-weight: 700; letter-spacing: 0.02em;">SURFTEC PROCESSING INC.</div>
+                <div style="font-size: 10px; color: #5E686E;">Certificate of Conformance</div>
+              </div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-align: right;">
+                <div>CERT-26-0891</div>
+                <div style="color: #5E686E;">09 JUL 2026</div>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; margin-top: 14px; font-size: 12px;">
+              <div><span style="color: #7A848A;">Customer:</span> <strong>Meridian Aerostructures</strong></div>
+              <div><span style="color: #7A848A;">PO:</span> <span style="font-family: 'IBM Plex Mono', monospace;">PO-88214</span></div>
+              <div><span style="color: #7A848A;">Part:</span> <span style="font-family: 'IBM Plex Mono', monospace;">MA-4471-3 Rev C</span></div>
+              <div><span style="color: #7A848A;">Qty Accepted:</span> <span style="font-family: 'IBM Plex Mono', monospace;">48 / 48</span></div>
+              <div style="grid-column: 1 / -1;"><span style="color: #7A848A;">Process:</span> <strong>Anodize, Sulfuric — MIL-A-8625F Type II Class 2, Black</strong></div>
+              <div style="grid-column: 1 / -1;"><span style="color: #7A848A;">Job:</span> <span style="font-family: 'IBM Plex Mono', monospace;">J-26144</span> · processed per SURFTEC WI-AN-014 Rev G · sealed per para 3.9</div>
+            </div>
+            <p style="margin: 16px 0 0 0; font-size: 11px; line-height: 1.55; color: #3A4348; text-wrap: pretty;">Certification: The parts listed above were processed in accordance with the specification(s) and revision(s) noted. Process solutions were within control limits during processing (analysis records on file). Records are retained per AS9100D §7.5 and are available for review.</p>
+            <div style="display: flex; justify-content: space-between; margin-top: 28px;">
+              <div>
+                <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; border-bottom: 1px solid #22282C; padding: 0 30px 4px 0;">M. Torres</div>
+                <div style="font-size: 10px; color: #7A848A; margin-top: 4px;">Quality Manager · e-signed 09 JUL 2026 14:02</div>
+              </div>
+              <button style="align-self: flex-end; background: #34698C; color: #FFFFFF; border: none; border-radius: 5px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;">Issue &amp; Email PDF</button>
+            </div>
+          </div>
+        </section>
+      </sc-if>
+
+      <!-- ============ INVOICING ============ -->
+      <sc-if value="{{ isInvoicing }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Invoicing">
+          <div style="display: flex; gap: 12px; margin-bottom: 14px; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 8px; background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 6px; padding: 8px 14px;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: #3D7A4E;"></span>
+              <span style="font-size: 12px; font-weight: 600;">QuickBooks Online</span>
+              <span style="font-size: 11px; color: #7A848A;">connected · last sync 13:47</span>
+            </div>
+            <button onClick="{{ syncAll }}" style="background: #34698C; color: #FFFFFF; border: none; border-radius: 5px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;">{{ syncAllLabel }}</button>
+            <div style="margin-left: auto; font-size: 12px; color: #5E686E;">Invoices generate from shipped jobs; customers, items &amp; taxes map to QuickBooks automatically.</div>
+          </div>
+          <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 6px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+              <thead>
+                <tr>
+                  <th style="text-align: left; padding: 10px 16px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Invoice</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Customer</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Jobs</th>
+                  <th style="text-align: right; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Amount</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Terms</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Status</th>
+                  <th style="text-align: left; padding: 10px 16px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">QuickBooks</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ invoices }}" as="inv" hint-placeholder-count="6">
+                  <tr style="border-top: 1px solid #EAECE8;" style-hover="background: #F6F8F5;">
+                    <td style="padding: 9px 16px; font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #34698C;">{{ inv.id }}</td>
+                    <td style="padding: 9px 8px; font-weight: 600;">{{ inv.customer }}</td>
+                    <td style="padding: 9px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #5E686E;">{{ inv.jobs }}</td>
+                    <td style="padding: 9px 8px; text-align: right; font-family: 'IBM Plex Mono', monospace; font-weight: 600;">{{ inv.amount }}</td>
+                    <td style="padding: 9px 8px; font-size: 11px; color: #5E686E;">{{ inv.terms }}</td>
+                    <td style="padding: 9px 8px;"><span style="font-size: 11px; font-weight: 600; background: {{ inv.chipBg }}; color: {{ inv.chipColor }}; padding: 2px 8px; border-radius: 9px;">{{ inv.status }}</span></td>
+                    <td style="padding: 9px 16px;">
+                      <sc-if value="{{ inv.showSync }}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{ inv.sync }}" style="background: #FFFFFF; color: #34698C; border: 1px solid #B7CBD9; border-radius: 5px; padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;">Sync now →</button>
+                      </sc-if>
+                      <sc-if value="{{ inv.showQbChip }}" hint-placeholder-val="{{ true }}">
+                        <span style="font-size: 11px; font-weight: 600; color: {{ inv.qbColor }};">{{ inv.qb }}</span>
+                      </sc-if>
+                    </td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </sc-if>
+
+      <!-- ============ CALIBRATION ============ -->
+      <sc-if value="{{ isCalibration }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Calibration">
+          <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 6px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+              <thead>
+                <tr>
+                  <th style="text-align: left; padding: 10px 16px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Asset</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Equipment</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Location</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Interval</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Last Cal</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Due</th>
+                  <th style="text-align: left; padding: 10px 16px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ equipment }}" as="eq" hint-placeholder-count="7">
+                  <tr style="border-top: 1px solid #EAECE8; background: {{ eq.bg }};">
+                    <td style="padding: 9px 16px; font-family: 'IBM Plex Mono', monospace; font-weight: 600;">{{ eq.asset }}</td>
+                    <td style="padding: 9px 8px; font-weight: 600;">{{ eq.name }}</td>
+                    <td style="padding: 9px 8px; color: #5E686E;">{{ eq.location }}</td>
+                    <td style="padding: 9px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 11px;">{{ eq.interval }}</td>
+                    <td style="padding: 9px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 11px;">{{ eq.last }}</td>
+                    <td style="padding: 9px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; color: {{ eq.dueColor }};">{{ eq.due }}</td>
+                    <td style="padding: 9px 16px;"><span style="font-size: 11px; font-weight: 600; background: {{ eq.chipBg }}; color: {{ eq.chipColor }}; padding: 2px 8px; border-radius: 9px;">{{ eq.status }}</span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <div style="font-size: 11px; color: #7A848A; margin-top: 10px;">Overdue instruments are locked out of traveler sign-offs — an operation requiring an overdue gauge cannot be completed.</div>
+        </section>
+      </sc-if>
+
+      <!-- ============ INVENTORY ============ -->
+      <sc-if value="{{ isInventory }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Inventory">
+          <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 6px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+              <thead>
+                <tr>
+                  <th style="text-align: left; padding: 10px 16px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Chemical</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Lot</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Vendor</th>
+                  <th style="text-align: right; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">On Hand</th>
+                  <th style="text-align: right; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Reorder At</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Expires</th>
+                  <th style="text-align: left; padding: 10px 16px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ stock }}" as="s" hint-placeholder-count="7">
+                  <tr style="border-top: 1px solid #EAECE8;">
+                    <td style="padding: 9px 16px; font-weight: 600;">{{ s.name }}</td>
+                    <td style="padding: 9px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 11px;">{{ s.lot }}</td>
+                    <td style="padding: 9px 8px; color: #5E686E;">{{ s.vendor }}</td>
+                    <td style="padding: 9px 8px; text-align: right; font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: {{ s.qtyColor }};">{{ s.onHand }}</td>
+                    <td style="padding: 9px 8px; text-align: right; font-family: 'IBM Plex Mono', monospace; color: #7A848A;">{{ s.reorder }}</td>
+                    <td style="padding: 9px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: {{ s.expColor }};">{{ s.expires }}</td>
+                    <td style="padding: 9px 16px;"><span style="font-size: 11px; font-weight: 600; background: {{ s.chipBg }}; color: {{ s.chipColor }}; padding: 2px 8px; border-radius: 9px;">{{ s.status }}</span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <div style="font-size: 11px; color: #7A848A; margin-top: 10px;">Lot numbers trace to bath make-ups and additions — every cert can trace back to the chemical lots in the tank at time of processing.</div>
+        </section>
+      </sc-if>
+
+      <!-- ============ VENDORS ============ -->
+      <sc-if value="{{ isVendors }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Vendors">
+          <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 6px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+              <thead>
+                <tr>
+                  <th style="text-align: left; padding: 10px 16px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Vendor</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Category</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Approval Basis</th>
+                  <th style="text-align: right; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">OTD</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Survey Due</th>
+                  <th style="text-align: left; padding: 10px 16px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ vendors }}" as="v" hint-placeholder-count="5">
+                  <tr style="border-top: 1px solid #EAECE8;">
+                    <td style="padding: 9px 16px; font-weight: 600;">{{ v.name }}</td>
+                    <td style="padding: 9px 8px; color: #5E686E;">{{ v.category }}</td>
+                    <td style="padding: 9px 8px; font-size: 11px;">{{ v.basis }}</td>
+                    <td style="padding: 9px 8px; text-align: right; font-family: 'IBM Plex Mono', monospace; color: {{ v.otdColor }};">{{ v.otd }}</td>
+                    <td style="padding: 9px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: {{ v.surveyColor }};">{{ v.survey }}</td>
+                    <td style="padding: 9px 16px;"><span style="font-size: 11px; font-weight: 600; background: {{ v.chipBg }}; color: {{ v.chipColor }}; padding: 2px 8px; border-radius: 9px;">{{ v.status }}</span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </sc-if>
+
+      <!-- ============ DOCUMENTS ============ -->
+      <sc-if value="{{ isDocuments }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Document Control">
+          <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 6px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+              <thead>
+                <tr>
+                  <th style="text-align: left; padding: 10px 16px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Doc No.</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Title</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Rev</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Effective</th>
+                  <th style="text-align: left; padding: 10px 8px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Owner</th>
+                  <th style="text-align: left; padding: 10px 16px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: #7A848A; font-weight: 600;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ docs }}" as="d" hint-placeholder-count="7">
+                  <tr style="border-top: 1px solid #EAECE8;" style-hover="background: #F6F8F5;">
+                    <td style="padding: 9px 16px; font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #34698C;">{{ d.no }}</td>
+                    <td style="padding: 9px 8px; font-weight: 600;">{{ d.title }}</td>
+                    <td style="padding: 9px 8px; font-family: 'IBM Plex Mono', monospace;">{{ d.rev }}</td>
+                    <td style="padding: 9px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 11px;">{{ d.effective }}</td>
+                    <td style="padding: 9px 8px; color: #5E686E;">{{ d.owner }}</td>
+                    <td style="padding: 9px 16px;"><span style="font-size: 11px; font-weight: 600; background: {{ d.chipBg }}; color: {{ d.chipColor }}; padding: 2px 8px; border-radius: 9px;">{{ d.status }}</span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <div style="font-size: 11px; color: #7A848A; margin-top: 10px;">Travelers always link the revision that was current at job release — superseded revs stay retrievable for audit but can't be issued to new jobs.</div>
+        </section>
+      </sc-if>
+
+      <!-- ============ PORTAL ============ -->
+      <sc-if value="{{ isPortal }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Customer Portal" style="max-width: 780px; margin: 0 auto;">
+          <div style="font-size: 12px; color: #5E686E; margin-bottom: 12px;">Preview of what <strong>Meridian Aerostructures</strong> sees when they log in. Customers see only their own jobs; no ITAR technical data is exposed.</div>
+          <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(20,30,35,0.07);">
+            <div style="display: flex; align-items: center; gap: 12px; padding: 14px 20px; background: #24313B;">
+              <div style="font-size: 13px; font-weight: 700; color: #FFFFFF;">SURFTEC Customer Portal</div>
+              <div style="margin-left: auto; font-size: 11px; color: #9BA6AD;">meridian-aero · 3 users</div>
+            </div>
+            <sc-for list="{{ portalJobs }}" as="pj" hint-placeholder-count="3">
+              <div style="display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-top: 1px solid #EAECE8;">
+                <div style="width: 130px;">
+                  <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600;">{{ pj.po }}</div>
+                  <div style="font-size: 11px; color: #7A848A;">{{ pj.part }}</div>
+                </div>
+                <div style="flex: 1;">
+                  <div style="display: flex; justify-content: space-between; font-size: 11px; color: #5E686E; margin-bottom: 5px;"><span>{{ pj.stage }}</span><span style="font-family: 'IBM Plex Mono', monospace;">{{ pj.eta }}</span></div>
+                  <div style="height: 7px; background: #EAECE8; border-radius: 4px;"><div style="height: 7px; border-radius: 4px; background: {{ pj.barColor }}; width: {{ pj.pct }};"></div></div>
+                </div>
+                <sc-if value="{{ pj.hasCert }}" hint-placeholder-val="{{ false }}">
+                  <a href="#" style="font-size: 12px; font-weight: 600;">⬇ C of C</a>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </sc-if>
+
+      <!-- ============ API ============ -->
+      <sc-if value="{{ isApi }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="API & Integrations" style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; align-items: start;">
+          <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 6px;">
+            <div style="padding: 12px 16px; border-bottom: 1px solid #EAECE8; display: flex; align-items: baseline; gap: 10px;">
+              <div style="font-size: 13px; font-weight: 700;">REST API v1</div>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #7A848A;">FastAPI · OpenAPI 3.1 · OAuth2 client-credentials</span>
+            </div>
+            <sc-for list="{{ endpoints }}" as="ep" hint-placeholder-count="10">
+              <div style="display: flex; align-items: center; gap: 10px; padding: 8px 16px; border-top: 1px solid #EAECE8;">
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; color: #FFFFFF; background: {{ ep.mColor }}; padding: 2px 7px; border-radius: 3px; width: 42px; text-align: center;">{{ ep.method }}</span>
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px;">{{ ep.path }}</span>
+                <span style="margin-left: auto; font-size: 11px; color: #7A848A; text-align: right;">{{ ep.desc }}</span>
+              </div>
+            </sc-for>
+            <div style="padding: 12px 16px; border-top: 1px solid #EAECE8; font-size: 11px; color: #7A848A; text-wrap: pretty;">Every mutation is written to an immutable audit log (who, what, when, before/after) — required for AS9100 record integrity. Webhooks fire on job.status_changed, ncr.opened, invoice.paid.</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="background: #FFFFFF; border: 1px solid #DDE0DC; border-radius: 6px; padding: 16px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 34px; height: 34px; border-radius: 6px; background: #2CA01C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px;">qb</div>
+                <div>
+                  <div style="font-size: 13px; font-weight: 700;">QuickBooks Online</div>
+                  <div style="font-size: 11px; color: #3D7A4E; font-weight: 600;">● Connected via OAuth2</div>
+                </div>
+              </div>
+              <div style="font-size: 11px; color: #5E686E; margin-top: 10px; line-height: 1.5; text-wrap: pretty;">Pushes: invoices, payments, credit memos, new customers. Pulls: payment status, chart of accounts. Sync runs every 15 min; failures queue for retry and alert accounting.</div>
+            </div>
+            <div style="background: #1B2228; border-radius: 6px; padding: 16px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #A8C7DC; line-height: 1.7; overflow-x: auto;">
+              <div style="color: #6E7B84;"># Example: pull open jobs</div>
+              <div>curl https://erp.surftec.com/api/v1/jobs?status=in_process \</div>
+              <div>&nbsp;&nbsp;-H "Authorization: Bearer $TOKEN"</div>
+              <div style="margin-top: 8px; color: #6E7B84;"># → 200 OK</div>
+              <div>{ "data": [ { "id": "J-26187",</div>
+              <div>&nbsp;&nbsp;"spec": "MIL-A-8625F-T2-C2",</div>
+              <div>&nbsp;&nbsp;"current_op": 40, "itar": true } ] }</div>
+            </div>
+          </div>
+        </section>
+      </sc-if>
+
+    </div>
+  </main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;itarBanner&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Compliance&quot;}, &quot;startScreen&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;dashboard&quot;, &quot;options&quot;: [&quot;dashboard&quot;, &quot;orders&quot;, &quot;travelers&quot;, &quot;shopfloor&quot;, &quot;chemistry&quot;, &quot;compliance&quot;, &quot;certs&quot;, &quot;invoicing&quot;, &quot;calibration&quot;, &quot;inventory&quot;, &quot;vendors&quot;, &quot;documents&quot;, &quot;portal&quot;, &quot;api&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Behavior&quot;}, &quot;accent&quot;: {&quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#34698C&quot;, &quot;options&quot;: [&quot;#34698C&quot;, &quot;#2E7D74&quot;, &quot;#8C5A34&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Theme&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const mkOps = (arr) => arr.map((o, i) => ({ num: (i + 1) * 10, name: o[0], params: o[1], wi: o[2], done: o[3] || false, sign: o[4] || '' }));
+    this.state = {
+      screen: props.startScreen ?? 'dashboard',
+      selectedJobId: 'J-26187',
+      pin: '',
+      pinMsg: '',
+      pinOk: true,
+      opRunning: false,
+      syncing: false,
+      jobs: [
+        { id: 'J-26187', customer: 'Meridian Aerostructures', po: 'PO-88214', part: 'MA-4471-3 Rev C', qty: 48, lot: 'L-2611', process: 'Anodize Type II', spec: 'MIL-A-8625F Ty II Cl 2', specNote: 'Black dye, 0.7–1.0 mil', due: 'Jul 10', dueNote: 'ships FedEx Frt', dueUrgent: true, itar: true, status: 'In Process',
+          ops: mkOps([
+            ['Receive & Count', 'Visual 100% · verify rev C', 'WI-RC-001', true, 'J. Kim · Jul 7 08:12'],
+            ['Rack', 'Ti racks, 12/flight bar', 'WI-RK-003', true, 'D. Ochoa · Jul 7 09:40'],
+            ['Alkaline Clean — Tank 2', '140°F · 5 min', 'WI-CL-002', true, 'D. Ochoa · Jul 7 10:05'],
+            ['Etch — Tank 4', 'NaOH 8 oz/gal · 2 min', 'WI-ET-001', true, 'D. Ochoa · Jul 7 10:18'],
+            ['Deox — Tank 5', 'Smut-Go 20% · 3 min', 'WI-DX-001', true, 'D. Ochoa · Jul 7 10:26'],
+            ['Anodize — Tank 7', '15 ASF · 68°F · 32 min', 'WI-AN-014', false],
+            ['Dye Black — Tank 9', '120°F · 15 min · pH 5.7', 'WI-DY-002', false],
+            ['Seal — Tank 11', 'Ni-acetate · 195°F · 20 min', 'WI-SL-001', false],
+            ['Unrack & Dry', 'Air dry, cotton gloves', 'WI-UR-001', false],
+            ['Final Inspect', 'Coating wt per ASTM B137', 'WI-FI-006', false],
+          ]) },
+        { id: 'J-26184', customer: 'Falcon Dynamics', po: 'PO-11762', part: 'FD-2280-1 Rev B', qty: 12, lot: 'L-2608', process: 'Passivate', spec: 'AMS 2700E Method 1 Ty 2', specNote: 'Citric alternative approved', due: 'Jul 9', dueNote: 'due today', dueUrgent: true, itar: false, status: 'Final Inspect',
+          ops: mkOps([
+            ['Receive & Count', 'Visual 100%', 'WI-RC-001', true, 'J. Kim · Jul 8 07:55'],
+            ['Degrease — Tank 1', '130°F · 10 min', 'WI-CL-001', true, 'R. Patel · Jul 8 08:30'],
+            ['Passivate — Tank 14', 'HNO₃ 25% · 70°F · 30 min', 'WI-PS-004', true, 'R. Patel · Jul 8 09:20'],
+            ['Water Break Test', 'Per AMS 2700 §3.4', 'WI-WB-001', true, 'R. Patel · Jul 8 09:58'],
+            ['Final Inspect', 'Copper sulfate verify', 'WI-FI-002', false],
+          ]) },
+        { id: 'J-26191', customer: 'Vantage Gear & Actuation', po: 'PO-30417', part: 'VG-118-7 Rev A', qty: 200, lot: 'L-2614', process: 'Chem Film', spec: 'MIL-DTL-5541F Ty 1 Cl 3', specNote: 'Cl 3 — low resistance', due: 'Jul 13', dueNote: '', dueUrgent: false, itar: true, status: 'Queued',
+          ops: mkOps([
+            ['Receive & Count', 'Visual 100%', 'WI-RC-001', false],
+            ['Alkaline Clean — Tank 2', '140°F · 5 min', 'WI-CL-002', false],
+            ['Deox — Tank 5', 'Smut-Go 20% · 2 min', 'WI-DX-001', false],
+            ['Chem Film — Tank 12', 'Bonderite 1200S · 90 s', 'WI-CF-003', false],
+            ['Final Inspect', 'Resistance per MIL-DTL-81706', 'WI-FI-004', false],
+          ]) },
+        { id: 'J-26178', customer: 'Meridian Aerostructures', po: 'PO-88102', part: 'MA-3902-1 Rev F', qty: 30, lot: 'L-2601', process: 'Prime & Paint', spec: 'MIL-PRF-23377K Ty I Cl C2', specNote: '+ MIL-PRF-85285 topcoat', due: 'Jul 11', dueNote: '', dueUrgent: false, itar: false, status: 'In Process',
+          ops: mkOps([
+            ['Receive & Count', 'Visual 100%', 'WI-RC-001', true, 'J. Kim · Jul 6 10:02'],
+            ['Chem Film — Tank 12', 'Pretreat per 5541 Cl 1A', 'WI-CF-003', true, 'D. Ochoa · Jul 6 13:30'],
+            ['Prime', 'DFT 0.6–0.9 mil · booth 2', 'WI-PT-008', true, 'S. Nguyen · Jul 7 11:15'],
+            ['Cure', '4 hr @ 140°F', 'WI-PT-009', false],
+            ['Topcoat', 'DFT 1.7–2.3 mil', 'WI-PT-010', false],
+            ['Final Inspect', 'Adhesion per ASTM D3359', 'WI-FI-005', false],
+          ]) },
+        { id: 'J-26193', customer: 'Corvid Space Systems', po: 'PO-77045', part: 'CS-509-2 Rev D', qty: 8, lot: 'L-2616', process: 'Nickel Plate', spec: 'AMS 2403K', specNote: '0.002" min thickness', due: 'Jul 15', dueNote: '', dueUrgent: false, itar: true, status: 'Hold — NCR',
+          ops: mkOps([
+            ['Receive & Count', 'Visual 100%', 'WI-RC-001', true, 'J. Kim · Jul 8 14:20'],
+            ['Stress Relieve', '375°F · 3 hr', 'WI-HT-002', false],
+            ['Nickel Plate — Tank 16', '40 ASF · 0.002" min', 'WI-NP-001', false],
+            ['Bake — Embrittlement Relief', '375°F · 23 hr', 'WI-HT-003', false],
+            ['Final Inspect', 'Thickness XRF · 3 pts', 'WI-FI-007', false],
+          ]) },
+      ],
+      invoices: [
+        { id: 'INV-26-1042', customer: 'Meridian Aerostructures', jobs: 'J-26144, J-26151', amount: 8420, terms: 'Net 30', status: 'Sent', qb: 'Synced' },
+        { id: 'INV-26-1043', customer: 'Falcon Dynamics', jobs: 'J-26160', amount: 2150, terms: 'Net 30', status: 'Paid', qb: 'Synced' },
+        { id: 'INV-26-1044', customer: 'Vantage Gear & Actuation', jobs: 'J-26155, J-26158', amount: 11930, terms: 'Net 45', status: 'Sent', qb: 'Pending' },
+        { id: 'INV-26-1045', customer: 'Corvid Space Systems', jobs: 'J-26149', amount: 4675, terms: 'Net 30', status: 'Draft', qb: 'Not synced' },
+        { id: 'INV-26-1046', customer: 'Meridian Aerostructures', jobs: 'J-26162', amount: 3310, terms: 'Net 30', status: 'Sent', qb: 'Pending' },
+        { id: 'INV-26-1047', customer: 'Apex Rotorcraft', jobs: 'J-26139', amount: 1980, terms: 'Net 30', status: 'Overdue', qb: 'Synced' },
+      ],
+    };
+  }
+
+  go(screen) { this.setState({ screen, pinMsg: '' }); }
+
+  chip(kind) {
+    const m = {
+      good: ['#E2EEE4', '#2F5F3C'], warn: ['#F4E9D4', '#7A5A1E'], bad: ['#F3DEDA', '#8A3325'],
+      info: ['#DFE9F1', '#2C5674'], neutral: ['#EAECE8', '#5E686E'], dark: ['#3B2F1E', '#E3C98A'],
+    };
+    return m[kind] || m.neutral;
+  }
+
+  jobChip(status) {
+    if (status === 'In Process') return 'info';
+    if (status === 'Queued') return 'neutral';
+    if (status === 'Final Inspect') return 'good';
+    return 'bad';
+  }
+
+  renderVals() {
+    const S = this.state;
+    const accent = this.props.accent ?? '#34698C';
+    const red = '#A8402F', amber = '#A8752B', green = '#3D7A4E', gray = '#7A848A';
+    const chipObj = (kind, text) => { const c = this.chip(kind); return { chipBg: c[0], chipColor: c[1], status: text }; };
+
+    const screens = [
+      ['dashboard', '◧', 'Dashboard', ''], ['orders', '⎘', 'Orders & Quotes', '8'], ['travelers', '⛁', 'Travelers', '34'],
+      ['shopfloor', '▶', 'Shop Floor', ''], ['chemistry', '⚗', 'Bath Chemistry', '2'], ['compliance', '✓', 'Compliance', '3'],
+      ['certs', '§', 'Certs & C of C', '4'], ['invoicing', '$', 'Invoicing', '4'], ['calibration', '◷', 'Calibration', '2'],
+      ['inventory', '▤', 'Inventory', '1'], ['vendors', '⇄', 'Vendors', ''], ['documents', '¶', 'Doc Control', ''],
+      ['portal', '◉', 'Customer Portal', ''], ['api', '</>', 'API & Integrations', ''],
+    ];
+    const navItems = screens.map(([key, icon, label, badge]) => {
+      const active = S.screen === key;
+      return {
+        icon, label, badge: badge || '', go: () => this.go(key),
+        bg: active ? '#252F37' : 'transparent', edge: active ? accent : 'transparent',
+        color: active ? '#FFFFFF' : '#9BA6AD', weight: active ? 600 : 400,
+        iconColor: active ? '#7FA8C4' : '#5B6870',
+        badgeBg: badge ? '#2A333B' : 'transparent', badgeColor: badge ? '#8FA0AB' : 'transparent',
+      };
+    });
+    const titles = {
+      dashboard: ['Operations Dashboard', 'live · all departments'],
+      orders: ['Orders & Quotes', '8 open orders · 3 pending quotes'],
+      travelers: ['Job Travelers', 'paperless routers · rev-controlled'],
+      shopfloor: ['Shop Floor Execution', 'operator terminal'],
+      chemistry: ['Bath Chemistry & Solution Control', 'Nadcap AC7108 solution analysis'],
+      compliance: ['Quality & Compliance', 'NCR · CAPA · audit readiness'],
+      certs: ['Certifications', 'C of C generation & release'],
+      invoicing: ['Invoicing', 'QuickBooks Online sync'],
+      calibration: ['Equipment & Calibration', 'ISO 10012 controlled instruments'],
+      inventory: ['Chemical Inventory', 'lot-traced consumables'],
+      vendors: ['Approved Vendors', 'AS9100 §8.4 external providers'],
+      documents: ['Document Control', 'controlled QMS documents'],
+      portal: ['Customer Portal', 'external view preview'],
+      api: ['API & Integrations', 'erp.surftec.com/api/v1'],
+    };
+
+    const jobs = S.jobs;
+    const sel = jobs.find(j => j.id === S.selectedJobId) || jobs[0];
+    const doneCount = sel.ops.filter(o => o.done).length;
+    const curIdx = sel.ops.findIndex(o => !o.done);
+    const floorOp = curIdx >= 0 ? sel.ops[curIdx] : sel.ops[sel.ops.length - 1];
+    const allDone = curIdx < 0;
+
+    const selJobChip = this.chip(this.jobChip(sel.status));
+    const selJob = {
+      id: sel.id, customer: sel.customer, po: sel.po, part: sel.part, qty: sel.qty, lot: sel.lot,
+      spec: sel.spec, specNote: sel.specNote, due: sel.due, dueNote: sel.dueNote || '—',
+      dueColor: sel.dueUrgent ? red : '#22282C', itar: sel.itar, status: sel.status,
+      chipBg: selJobChip[0], chipColor: selJobChip[1],
+    };
+
+    const jobList = jobs.map(j => {
+      const c = this.chip(this.jobChip(j.status));
+      const active = j.id === S.selectedJobId;
+      const dc = j.ops.filter(o => o.done).length;
+      return {
+        id: j.id, customer: j.customer, process: j.process, status: j.status,
+        chipBg: c[0], chipColor: c[1], pct: dc + '/' + j.ops.length + ' ops',
+        select: () => this.setState({ selectedJobId: j.id }),
+        bg: active ? '#F0F5F8' : 'transparent', edge: active ? accent : 'transparent',
+      };
+    });
+
+    const selOps = sel.ops.map((o, i) => {
+      const isCurrent = i === curIdx;
+      const c = o.done ? this.chip('good') : isCurrent ? this.chip('info') : this.chip('neutral');
+      return {
+        num: o.num, name: o.name, params: o.params, wi: o.wi,
+        sign: o.done ? o.sign : '—', signColor: o.done ? '#3D7A4E' : '#B4BCB6',
+        status: o.done ? 'Complete' : isCurrent ? 'Current' : 'Pending',
+        chipBg: c[0], chipColor: c[1], bg: isCurrent ? '#F4F8FB' : 'transparent',
+      };
+    });
+
+    const hotJobs = jobs.filter(j => j.dueUrgent || j.status === 'Hold — NCR').concat(jobs.filter(j => !j.dueUrgent && j.status !== 'Hold — NCR')).slice(0, 5).map(j => {
+      const cur = j.ops.find(o => !o.done);
+      return {
+        id: j.id, customer: j.customer, process: j.process,
+        currentOp: j.status === 'Hold — NCR' ? '⚠ On hold — NCR-26-031' : (cur ? cur.name : 'Ship'),
+        due: j.due, dueColor: j.dueUrgent ? red : '#5E686E',
+        open: () => this.setState({ screen: 'travelers', selectedJobId: j.id }),
+      };
+    });
+
+    const kpis = [
+      { value: '34', label: 'Jobs in WIP', edge: accent, numColor: '#22282C', go: () => this.go('travelers') },
+      { value: '6', label: 'Due within 48 hrs', edge: amber, numColor: amber, go: () => this.go('travelers') },
+      { value: '3', label: 'Open NCRs', edge: red, numColor: red, go: () => this.go('compliance') },
+      { value: '2', label: 'Tanks out of control', edge: red, numColor: red, go: () => this.go('chemistry') },
+      { value: '2', label: 'Calibrations overdue', edge: amber, numColor: amber, go: () => this.go('calibration') },
+      { value: '$32.5k', label: 'Unsynced invoices', edge: gray, numColor: '#22282C', go: () => this.go('invoicing') },
+    ];
+
+    const tankAlerts = [
+      { dot: red, title: 'Tank 9 — Black Dye out of control', detail: 'pH 6.3 vs limit 5.5–6.0. Tank auto-held; J-26187 op 70 blocked until re-analysis passes.' },
+      { dot: red, title: 'Tank 16 — Nickel low', detail: 'NiSO₄ 28 oz/gal vs min 30. Addition calculated: 42 lb — pending chem tech confirm.' },
+      { dot: amber, title: 'Tank 7 — analysis due in 6 hrs', detail: 'Sulfuric anodize · weekly cycle per AC7108 Table 2.' },
+    ];
+
+    const pulse = [
+      { label: 'On-time delivery (90 d)', value: '96.4%', color: green },
+      { label: 'First-pass yield (90 d)', value: '98.9%', color: green },
+      { label: 'Escapes (12 mo)', value: '0', color: green },
+      { label: 'Nadcap CP audit', value: 'Nov 2026', color: '#22282C' },
+      { label: 'AS9100D surveillance', value: 'Sep 2026', color: '#22282C' },
+    ];
+
+    const orders = [
+      { id: 'SO-26-0412', customer: 'Meridian Aerostructures', po: 'PO-88214', part: 'MA-4471-3', spec: 'MIL-A-8625 T2 C2', qty: 48, value: '$3,840', due: 'Jul 10', k: 'info', s: 'In Process' },
+      { id: 'SO-26-0415', customer: 'Falcon Dynamics', po: 'PO-11762', part: 'FD-2280-1', spec: 'AMS 2700 M1', qty: 12, value: '$1,260', due: 'Jul 9', k: 'good', s: 'Inspecting' },
+      { id: 'SO-26-0418', customer: 'Vantage Gear & Actuation', po: 'PO-30417', part: 'VG-118-7', spec: 'MIL-DTL-5541 T1 C3', qty: 200, value: '$5,400', due: 'Jul 13', k: 'neutral', s: 'Queued' },
+      { id: 'SO-26-0419', customer: 'Corvid Space Systems', po: 'PO-77045', part: 'CS-509-2', spec: 'AMS 2403', qty: 8, value: '$4,675', due: 'Jul 15', k: 'bad', s: 'Hold — NCR' },
+      { id: 'SO-26-0421', customer: 'Apex Rotorcraft', po: 'PO-55210', part: 'AR-771-4', spec: 'MIL-A-8625 T3', qty: 64, value: '$7,040', due: 'Jul 17', k: 'neutral', s: 'Queued' },
+      { id: 'QT-26-0188', customer: 'Meridian Aerostructures', po: 'RFQ-2231', part: 'MA-5120-1', spec: 'MIL-PRF-23377', qty: 120, value: '$9,600', due: '—', k: 'warn', s: 'Quote — Sent' },
+      { id: 'QT-26-0189', customer: 'Halstead Defense', po: 'RFQ-0092', part: 'HD-330-2', spec: 'AMS 2471', qty: 40, value: '$2,980', due: '—', k: 'warn', s: 'Quote — Draft' },
+      { id: 'QT-26-0190', customer: 'Corvid Space Systems', po: 'RFQ-7718', part: 'CS-612-1', spec: 'AMS 2404', qty: 16, value: '$6,120', due: '—', k: 'warn', s: 'Quote — Review' },
+    ].map(o => Object.assign({}, o, chipObj(o.k, o.s)));
+
+    const tanks = [
+      { tank: 'T-02', solution: 'Alkaline Cleaner', param: 'Conc. (oz/gal)', result: '6.2', limits: '4.0 – 8.0', analyzed: 'Jul 8', nextDue: 'Jul 15', k: 'good', s: 'In Control', rc: '#22282C', dueC: '#5E686E' },
+      { tank: 'T-04', solution: 'Etch — NaOH', param: 'NaOH (oz/gal)', result: '8.1', limits: '6.0 – 10.0', analyzed: 'Jul 8', nextDue: 'Jul 15', k: 'good', s: 'In Control', rc: '#22282C', dueC: '#5E686E' },
+      { tank: 'T-05', solution: 'Deoxidizer', param: 'Fe (g/L)', result: '11.4', limits: '≤ 15.0', analyzed: 'Jul 7', nextDue: 'Jul 14', k: 'good', s: 'In Control', rc: '#22282C', dueC: '#5E686E' },
+      { tank: 'T-07', solution: 'Sulfuric Anodize', param: 'H₂SO₄ (oz/gal)', result: '24.6', limits: '20 – 26', analyzed: 'Jul 2', nextDue: 'Today 18:00', k: 'warn', s: 'Analysis Due', rc: '#22282C', dueC: '#A8752B' },
+      { tank: 'T-09', solution: 'Black Dye', param: 'pH', result: '6.3', limits: '5.5 – 6.0', analyzed: 'Jul 9', nextDue: '—', k: 'bad', s: 'HELD — OOC', rc: '#A8402F', dueC: '#5E686E' },
+      { tank: 'T-11', solution: 'Ni-Acetate Seal', param: 'Ni (g/L)', result: '5.8', limits: '5.0 – 7.0', analyzed: 'Jul 6', nextDue: 'Jul 13', k: 'good', s: 'In Control', rc: '#22282C', dueC: '#5E686E' },
+      { tank: 'T-12', solution: 'Chem Film 1200S', param: 'Cr⁶⁺ (g/L)', result: '4.1', limits: '3.5 – 5.5', analyzed: 'Jul 7', nextDue: 'Jul 14', k: 'good', s: 'In Control', rc: '#22282C', dueC: '#5E686E' },
+      { tank: 'T-14', solution: 'Passivate — HNO₃', param: 'HNO₃ (% v/v)', result: '25.2', limits: '20 – 30', analyzed: 'Jul 8', nextDue: 'Jul 22', k: 'good', s: 'In Control', rc: '#22282C', dueC: '#5E686E' },
+      { tank: 'T-16', solution: 'Nickel Sulfamate', param: 'NiSO₄ (oz/gal)', result: '28.0', limits: '30 – 40', analyzed: 'Jul 9', nextDue: '—', k: 'bad', s: 'HELD — OOC', rc: '#A8402F', dueC: '#5E686E' },
+    ].map(t => {
+      const c = this.chip(t.k);
+      return { tank: t.tank, solution: t.solution, param: t.param, result: t.result, limits: t.limits, analyzed: t.analyzed, nextDue: t.nextDue, status: t.s, chipBg: c[0], chipColor: c[1], resultColor: t.rc, dueColor: t.dueC, bg: t.k === 'bad' ? '#FBF3F1' : 'transparent' };
+    });
+
+    const ncrs = [
+      { id: 'NCR-26-031', job: 'J-26193', date: 'Jul 8', k: 'bad', d: 'Open — MRB', desc: 'Pitting observed on 2 of 8 pcs after stress relieve. Customer notified; awaiting use-as-is / rework disposition.' },
+      { id: 'NCR-26-030', job: 'J-26170', date: 'Jul 3', k: 'warn', d: 'Rework', desc: 'Chem film coating rub-off on masked edge, 6 pcs. Strip & reprocess authorized per WI-CF-003 §8.' },
+      { id: 'NCR-26-029', job: 'T-09', date: 'Jul 1', k: 'warn', d: 'Process NCR', desc: 'Dye tank pH drift beyond control limit between weekly analyses. Interim: analysis frequency doubled.' },
+      { id: 'NCR-26-028', job: 'J-26158', date: 'Jun 26', k: 'good', d: 'Closed', desc: 'One part short on incoming count vs packing slip. Customer confirmed short-ship; count corrected.' },
+    ].map(n => { const c = this.chip(n.k); return { id: n.id, job: n.job, date: n.date, desc: n.desc, disposition: n.d, chipBg: c[0], chipColor: c[1] }; });
+
+    const capas = [
+      { id: 'CAPA-26-07', desc: 'Dye tank pH drift — root cause: seal tank drag-in. Add DI rinse + weekly→2× analysis.', due: 'Jul 18', k: 'info', phase: 'Verify', dueColor: '#5E686E' },
+      { id: 'CAPA-26-06', desc: 'Racking damage on thin-wall parts — new rack design + operator training WI-RK-003 Rev D.', due: 'Jul 11', k: 'warn', phase: 'Implement', dueColor: amber },
+      { id: 'CAPA-26-05', desc: 'Late supplier cert docs — vendor scorecard gate added at receiving.', due: 'Closed Jun 30', k: 'good', phase: 'Closed', dueColor: '#5E686E' },
+    ].map(c0 => { const c = this.chip(c0.k); return { id: c0.id, desc: c0.desc, due: c0.due, dueColor: c0.dueColor, phase: c0.phase, chipBg: c[0], chipColor: c[1] }; });
+
+    const audits = [
+      { name: 'Nadcap CP (AC7108) — Nov 2026', pct: '87%', color: green, note: '4 checklist items open: 2 chemistry records, 2 training matrix gaps.' },
+      { name: 'AS9100D surveillance — Sep 2026', pct: '92%', color: green, note: 'Internal audit complete; 1 minor finding in doc control closing this week.' },
+      { name: 'Internal audit plan 2026', pct: '58%', color: amber, note: '7 of 12 process audits complete. Plating audit scheduled Jul 21.' },
+      { name: 'Training & certification matrix', pct: '81%', color: amber, note: '3 operators due for periodic vision exam (Jul).' },
+    ];
+
+    const certQueue = [
+      { id: 'J-26144', customer: 'Meridian', process: 'Anodize T2', k: 'info', state: 'Ready to issue' },
+      { id: 'J-26151', customer: 'Meridian', process: 'Chem Film', k: 'info', state: 'Ready to issue' },
+      { id: 'J-26160', customer: 'Falcon Dynamics', process: 'Passivate', k: 'good', state: 'Issued Jul 8' },
+      { id: 'J-26184', customer: 'Falcon Dynamics', process: 'Passivate', k: 'warn', state: 'Awaiting final insp.' },
+      { id: 'J-26187', customer: 'Meridian', process: 'Anodize T2', k: 'bad', state: 'Blocked — T-09 OOC' },
+    ].map(q => { const c = this.chip(q.k); return { id: q.id, customer: q.customer, process: q.process, state: q.state, chipBg: c[0], chipColor: c[1] }; });
+
+    const invoices = S.invoices.map(inv => {
+      const k = inv.status === 'Paid' ? 'good' : inv.status === 'Overdue' ? 'bad' : inv.status === 'Draft' ? 'neutral' : 'info';
+      const c = this.chip(k);
+      const syncable = inv.qb === 'Pending' || inv.qb === 'Not synced';
+      return {
+        id: inv.id, customer: inv.customer, jobs: inv.jobs, terms: inv.terms, status: inv.status,
+        amount: '$' + inv.amount.toLocaleString(), chipBg: c[0], chipColor: c[1],
+        qb: inv.qb === 'Syncing' ? '⟳ Syncing…' : inv.qb, qbColor: inv.qb === 'Synced' ? green : inv.qb === 'Syncing' ? accent : gray,
+        showSync: syncable && !S.syncing, showQbChip: !syncable || S.syncing,
+        sync: () => this.syncOne(inv.id),
+      };
+    });
+
+    const equipment = [
+      { asset: 'CAL-014', name: 'Coating thickness gauge (XRF)', location: 'Final Inspect', interval: '12 mo', last: 'Aug 2025', due: 'Aug 2026', k: 'good', s: 'Current' },
+      { asset: 'CAL-022', name: 'Tank 7 temp controller', location: 'Anodize line', interval: '6 mo', last: 'Jan 2026', due: 'Jul 12', k: 'warn', s: 'Due Soon' },
+      { asset: 'CAL-031', name: 'pH meter — lab', location: 'Chem lab', interval: '3 mo', last: 'Mar 2026', due: 'Jun 28', k: 'bad', s: 'OVERDUE' },
+      { asset: 'CAL-008', name: 'DC rectifier #2 shunt', location: 'Anodize line', interval: '12 mo', last: 'Feb 2026', due: 'Feb 2027', k: 'good', s: 'Current' },
+      { asset: 'CAL-040', name: 'Oven — embrittlement bake', location: 'Heat treat', interval: '3 mo', last: 'Apr 2026', due: 'Jul 2', k: 'bad', s: 'OVERDUE' },
+      { asset: 'CAL-017', name: 'Micrometer set (0–1")', location: 'Receiving', interval: '12 mo', last: 'Nov 2025', due: 'Nov 2026', k: 'good', s: 'Current' },
+      { asset: 'CAL-025', name: 'Conductivity meter — DI water', location: 'Rinse line', interval: '6 mo', last: 'May 2026', due: 'Nov 2026', k: 'good', s: 'Current' },
+    ].map(e => { const c = this.chip(e.k); return { asset: e.asset, name: e.name, location: e.location, interval: e.interval, last: e.last, due: e.due, status: e.s, chipBg: c[0], chipColor: c[1], dueColor: e.k === 'bad' ? red : e.k === 'warn' ? amber : '#5E686E', bg: e.k === 'bad' ? '#FBF3F1' : 'transparent' }; });
+
+    const stock = [
+      { name: 'Sulfuric acid 66°Bé', lot: 'SA-26-118', vendor: 'ChemSupply West', onHand: '340 gal', reorder: '150 gal', expires: '—', k: 'good', s: 'OK', qc: '#22282C', ec: '#5E686E' },
+      { name: 'Nickel acetate seal salt', lot: 'NA-26-044', vendor: 'ChemSupply West', onHand: '18 kg', reorder: '25 kg', expires: 'Mar 2027', k: 'warn', s: 'Reorder', qc: amber, ec: '#5E686E' },
+      { name: 'Bonderite 1200S', lot: 'BD-26-071', vendor: 'Henkel (distr.)', onHand: '96 kg', reorder: '40 kg', expires: 'Jan 2027', k: 'good', s: 'OK', qc: '#22282C', ec: '#5E686E' },
+      { name: 'Black dye — Sanodal', lot: 'DY-25-203', vendor: 'Pacific Finishes', onHand: '11 kg', reorder: '8 kg', expires: 'Aug 2026', k: 'warn', s: 'Expiring', qc: '#22282C', ec: amber },
+      { name: 'Nitric acid 42°Bé', lot: 'NI-26-095', vendor: 'ChemSupply West', onHand: '210 gal', reorder: '100 gal', expires: '—', k: 'good', s: 'OK', qc: '#22282C', ec: '#5E686E' },
+      { name: 'MIL-PRF-23377 primer', lot: 'PR-26-031', vendor: 'AeroCoat Distr.', onHand: '9 kits', reorder: '6 kits', expires: 'Oct 2026', k: 'good', s: 'OK', qc: '#22282C', ec: '#5E686E' },
+      { name: 'Penetrant developer D-100', lot: 'PD-25-188', vendor: 'NDT Supply Co.', onHand: '2 cs', reorder: '4 cs', expires: 'Jul 2026', k: 'bad', s: 'Expired lot', qc: red, ec: red },
+    ].map(s0 => { const c = this.chip(s0.k); return { name: s0.name, lot: s0.lot, vendor: s0.vendor, onHand: s0.onHand, reorder: s0.reorder, expires: s0.expires, status: s0.s, chipBg: c[0], chipColor: c[1], qtyColor: s0.qc, expColor: s0.ec }; });
+
+    const vendors = [
+      { name: 'ChemSupply West', category: 'Process chemicals', basis: 'Survey + cert review', otd: '98%', survey: 'Mar 2027', k: 'good', s: 'Approved' },
+      { name: 'Pacific Finishes', category: 'Dyes & additives', basis: 'Cert review', otd: '94%', survey: 'Oct 2026', k: 'good', s: 'Approved' },
+      { name: 'Calibrate-It Labs', category: 'Calibration (17025)', basis: 'A2LA accreditation', otd: '100%', survey: 'Jan 2027', k: 'good', s: 'Approved' },
+      { name: 'NDT Supply Co.', category: 'NDT consumables', basis: 'Cert review', otd: '82%', survey: 'OVERDUE Jun 2026', k: 'warn', s: 'Conditional' },
+      { name: 'Ridgeline Waste Svcs', category: 'Hazmat disposal', basis: 'Permit + survey', otd: '96%', survey: 'Dec 2026', k: 'good', s: 'Approved' },
+    ].map(v => { const c = this.chip(v.k); return { name: v.name, category: v.category, basis: v.basis, otd: v.otd, survey: v.survey, status: v.s, chipBg: c[0], chipColor: c[1], otdColor: parseInt(v.otd) < 90 ? amber : '#22282C', surveyColor: v.survey.indexOf('OVERDUE') === 0 ? red : '#5E686E' }; });
+
+    const docs = [
+      { no: 'QM-001', title: 'Quality Manual', rev: 'M', effective: 'Feb 2026', owner: 'M. Torres', k: 'good', s: 'Released' },
+      { no: 'QP-830', title: 'Control of Nonconforming Product', rev: 'F', effective: 'Apr 2026', owner: 'M. Torres', k: 'good', s: 'Released' },
+      { no: 'WI-AN-014', title: 'Sulfuric Anodize — Type II / III', rev: 'G', effective: 'May 2026', owner: 'Processing', k: 'good', s: 'Released' },
+      { no: 'WI-CF-003', title: 'Chemical Conversion Coating', rev: 'E', effective: 'Jan 2026', owner: 'Processing', k: 'good', s: 'Released' },
+      { no: 'WI-PS-004', title: 'Passivation of CRES', rev: 'D', effective: 'Jun 2026', owner: 'Processing', k: 'warn', s: 'In Review — Rev E' },
+      { no: 'WI-RK-003', title: 'Racking & Handling', rev: 'C', effective: 'Sep 2025', owner: 'Processing', k: 'warn', s: 'In Review — Rev D' },
+      { no: 'QP-750', title: 'Record Retention & Electronic Records', rev: 'B', effective: 'Mar 2026', owner: 'M. Torres', k: 'good', s: 'Released' },
+    ].map(d => { const c = this.chip(d.k); return { no: d.no, title: d.title, rev: d.rev, effective: d.effective, owner: d.owner, status: d.s, chipBg: c[0], chipColor: c[1] }; });
+
+    const portalJobs = [
+      { po: 'PO-88214', part: 'MA-4471-3', stage: 'In process — Anodize', eta: 'ETA Jul 10', pct: '55%', barColor: accent, hasCert: false },
+      { po: 'PO-88102', part: 'MA-3902-1', stage: 'In process — Paint', eta: 'ETA Jul 11', pct: '60%', barColor: accent, hasCert: false },
+      { po: 'PO-88031', part: 'MA-4471-1', stage: 'Shipped Jul 6 · cert available', eta: 'Delivered', pct: '100%', barColor: green, hasCert: true },
+    ];
+
+    const endpoints = [
+      { method: 'GET', path: '/api/v1/jobs', desc: 'List / filter jobs', mColor: '#2F6B4F' },
+      { method: 'POST', path: '/api/v1/jobs', desc: 'Create job from order', mColor: '#34698C' },
+      { method: 'GET', path: '/api/v1/jobs/{id}/traveler', desc: 'Ops + sign-off record', mColor: '#2F6B4F' },
+      { method: 'POST', path: '/api/v1/jobs/{id}/ops/{op}/signoff', desc: 'Operator sign-off', mColor: '#34698C' },
+      { method: 'GET', path: '/api/v1/tanks/{id}/analyses', desc: 'Solution analysis history', mColor: '#2F6B4F' },
+      { method: 'POST', path: '/api/v1/tanks/{id}/analyses', desc: 'Log lab result (auto-hold)', mColor: '#34698C' },
+      { method: 'GET', path: '/api/v1/certs/{id}.pdf', desc: 'Signed C of C document', mColor: '#2F6B4F' },
+      { method: 'GET', path: '/api/v1/ncrs', desc: 'NCR / CAPA records', mColor: '#2F6B4F' },
+      { method: 'POST', path: '/api/v1/invoices/{id}/sync', desc: 'Push to QuickBooks', mColor: '#34698C' },
+      { method: 'GET', path: '/api/v1/audit-log', desc: 'Immutable change history', mColor: '#2F6B4F' },
+    ];
+
+    const routeDots = sel.ops.map((o, i) => ({ name: o.num + ' ' + o.name, color: o.done ? green : i === curIdx ? accent : '#DDE0DC' }));
+
+    return {
+      navItems,
+      screenTitle: (titles[S.screen] || titles.dashboard)[0],
+      screenSub: (titles[S.screen] || titles.dashboard)[1],
+      showItar: this.props.itarBanner ?? true,
+      isDashboard: S.screen === 'dashboard', isOrders: S.screen === 'orders', isTravelers: S.screen === 'travelers',
+      isShopFloor: S.screen === 'shopfloor', isChemistry: S.screen === 'chemistry', isCompliance: S.screen === 'compliance',
+      isCerts: S.screen === 'certs', isInvoicing: S.screen === 'invoicing', isCalibration: S.screen === 'calibration',
+      isInventory: S.screen === 'inventory', isVendors: S.screen === 'vendors', isDocuments: S.screen === 'documents',
+      isPortal: S.screen === 'portal', isApi: S.screen === 'api',
+      goTravelers: (e) => { if (e && e.preventDefault) e.preventDefault(); this.go('travelers'); },
+      goChemistry: (e) => { if (e && e.preventDefault) e.preventDefault(); this.go('chemistry'); },
+      goShopFloor: () => this.go('shopfloor'),
+      kpis, hotJobs, tankAlerts, pulse, orders, jobList, selJob, selOps, tanks, ncrs, capas, audits, certQueue,
+      invoices, equipment, stock, vendors, docs, portalJobs, endpoints, routeDots,
+      floorOp: { num: floorOp.num, name: allDone ? 'All operations complete ✓' : floorOp.name, params: floorOp.params, wi: floorOp.wi },
+      floorOpCount: sel.ops[sel.ops.length - 1].num,
+      pin: S.pin,
+      setPin: (e) => this.setState({ pin: e.target.value, pinMsg: '' }),
+      pinMsg: S.pinMsg, pinMsgColor: S.pinOk ? green : red,
+      startOp: () => {
+        if (S.pin.length < 4) { this.setState({ pinMsg: 'Enter your 4–6 digit PIN', pinOk: false }); return; }
+        this.setState({ opRunning: true, pinMsg: 'Op started — clock running', pinOk: true });
+      },
+      startLabel: S.opRunning ? '⏱ Running…' : 'Start Op',
+      startBg: S.opRunning ? '#F4E9D4' : '#FFFFFF', startColor: S.opRunning ? '#7A5A1E' : '#22282C',
+      startBorder: S.opRunning ? '#E3CD9E' : '#C9CFC9',
+      completeBg: green,
+      completeOp: () => {
+        if (S.pin.length < 4) { this.setState({ pinMsg: 'Enter your 4–6 digit PIN', pinOk: false }); return; }
+        const jobs2 = S.jobs.map(j => {
+          if (j.id !== sel.id) return j;
+          const ops2 = j.ops.map((o, i) => i === curIdx ? Object.assign({}, o, { done: true, sign: 'M. Torres · Jul 9 ' + new Date().toTimeString().slice(0, 5) }) : o);
+          return Object.assign({}, j, { ops: ops2 });
+        });
+        this.setState({ jobs: jobs2, opRunning: false, pinMsg: 'Signed off ✓ — next op loaded', pinOk: true });
+      },
+      syncAll: () => this.syncAllInvoices(),
+      syncAllLabel: S.syncing ? '⟳ Syncing to QuickBooks…' : 'Sync All Pending →',
+    };
+  }
+
+  syncOne(id) {
+    this.setState(s => ({ invoices: s.invoices.map(i => i.id === id ? Object.assign({}, i, { qb: 'Syncing' }) : i) }));
+    setTimeout(() => {
+      this.setState(s => ({ invoices: s.invoices.map(i => i.id === id ? Object.assign({}, i, { qb: 'Synced' }) : i) }));
+    }, 1200);
+  }
+
+  syncAllInvoices() {
+    if (this.state.syncing) return;
+    this.setState(s => ({ syncing: true, invoices: s.invoices.map(i => (i.qb === 'Pending' || i.qb === 'Not synced') ? Object.assign({}, i, { qb: 'Syncing' }) : i) }));
+    setTimeout(() => {
+      this.setState(s => ({ syncing: false, invoices: s.invoices.map(i => i.qb === 'Syncing' ? Object.assign({}, i, { qb: 'Synced' }) : i) }));
+    }, 1600);
+  }
+}
+</script>
+</body>
+</html>

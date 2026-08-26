@@ -1,0 +1,20 @@
+# Python / backend
+backend/.venv/
+backend/__pycache__/
+**/__pycache__/
+*.pyc
+backend/.env
+
+# Real customer ERP export — contains live customer/vendor/pricing data, never commit
+backend/data/
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Editors / OS
+.DS_Store
+
+# Runtime logs
+*.log
