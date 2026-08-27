@@ -8,7 +8,6 @@ from app.api.deps import get_current_user, get_db
 from app.models.chemistry import Tank
 from app.models.compliance import CompanyMetric, NCR
 from app.models.equipment import Equipment
-from app.models.invoice import Invoice
 from app.models.job import Job
 from app.schemas.dashboard import DashboardSummary, HotJob, Kpi, PulseItem, TankAlert
 
@@ -35,17 +34,15 @@ def summary(db: Session = Depends(get_db)) -> DashboardSummary:
     tanks_ooc = db.execute(select(func.count()).select_from(Tank).where(Tank.held.is_(True))).scalar_one()
     equipment_list = db.execute(select(Equipment)).scalars().all()
     overdue_equipment = [e for e in equipment_list if e.is_overdue()]
-    unsynced_total = db.execute(
-        select(func.coalesce(func.sum(Invoice.amount), 0)).where(Invoice.qb_sync_status != "Synced")
-    ).scalar_one()
-
+    # The "Unsynced invoices" KPI was QuickBooks-derived (it summed invoices whose
+    # qb_sync_status was not "Synced"), so it goes with the rest of the hidden QBO UI.
+    # Invoice.qb_sync_status itself is untouched; restoring the tile is re-adding the row.
     kpis = [
         Kpi(key="wip", value=str(len(jobs)), label="Jobs in WIP", kind="info"),
         Kpi(key="due48", value=str(len(due_soon)), label="Due within 48 hrs", kind="warn" if due_soon else "good"),
         Kpi(key="ncrs", value=str(open_ncrs), label="Open NCRs", kind="bad" if open_ncrs else "good"),
         Kpi(key="tanks_ooc", value=str(tanks_ooc), label="Tanks out of control", kind="bad" if tanks_ooc else "good"),
         Kpi(key="cal_overdue", value=str(len(overdue_equipment)), label="Calibrations overdue", kind="warn" if overdue_equipment else "good"),
-        Kpi(key="unsynced", value=(f"${float(unsynced_total) / 1000:,.1f}k" if unsynced_total else "$0"), label="Unsynced invoices", kind="neutral"),
     ]
 
     hot = sorted(

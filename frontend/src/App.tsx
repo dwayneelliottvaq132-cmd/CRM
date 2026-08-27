@@ -12,7 +12,6 @@ import { PlanningPage } from "./pages/PlanningPage";
 import { TravelersPage } from "./pages/TravelersPage";
 import { ShopFloorPage } from "./pages/ShopFloorPage";
 import { ChemistryPage } from "./pages/ChemistryPage";
-import { CompliancePage } from "./pages/CompliancePage";
 import { CertsPage } from "./pages/CertsPage";
 import { InvoicingPage } from "./pages/InvoicingPage";
 import { CalibrationPage } from "./pages/CalibrationPage";
@@ -21,8 +20,11 @@ import { VendorsPage } from "./pages/VendorsPage";
 import { DocumentsPage } from "./pages/DocumentsPage";
 import { PortalPage } from "./pages/PortalPage";
 import { ApiPage } from "./pages/ApiPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { AdminUsersPage } from "./pages/AdminUsersPage";
 import { FinishingControl } from "./pages/finishing/FinishingControl";
 import { RequireAuth } from "./pages/finishing/RequireAuth";
+import { RfqApp } from "./pages/rfq/RfqApp";
 
 function ProtectedShell({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -31,11 +33,27 @@ function ProtectedShell({ children }: { children: React.ReactNode }) {
   return <Layout>{children}</Layout>;
 }
 
+// Nav already hides the "Users & Admin" link for non-admins (Layout.tsx); this catches
+// direct navigation to the URL. The backend is the real gate — every /users admin
+// endpoint carries require_role("Admin") independently of this check.
+function RequireAdmin({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  if (user?.role !== "Admin") {
+    return (
+      <div style={{ padding: 40, fontSize: 13, color: "#5E686E" }}>
+        You don't have access to this page. Admin role required.
+      </div>
+    );
+  }
+  return <>{children}</>;
+}
+
 export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      {/* RFQ Intake is home. Finishing Control and the ERP keep their own routes. */}
+      <Route path="/" element={<Navigate to="/rfq" replace />} />
       <Route path="/dashboard" element={<ProtectedShell><DashboardPage /></ProtectedShell>} />
       <Route path="/quoting" element={<ProtectedShell><QuotingPage /></ProtectedShell>} />
       <Route path="/sales-orders" element={<ProtectedShell><SalesOrdersPage /></ProtectedShell>} />
@@ -48,7 +66,6 @@ export default function App() {
       <Route path="/shopfloor/:jobId" element={<ProtectedShell><ShopFloorPage /></ProtectedShell>} />
       <Route path="/kiosk" element={<KioskShell><KioskScanPage /></KioskShell>} />
       <Route path="/chemistry" element={<ProtectedShell><ChemistryPage /></ProtectedShell>} />
-      <Route path="/compliance" element={<ProtectedShell><CompliancePage /></ProtectedShell>} />
       <Route path="/certs" element={<ProtectedShell><CertsPage /></ProtectedShell>} />
       <Route path="/invoicing" element={<ProtectedShell><InvoicingPage /></ProtectedShell>} />
       <Route path="/calibration" element={<ProtectedShell><CalibrationPage /></ProtectedShell>} />
@@ -58,8 +75,11 @@ export default function App() {
       <Route path="/documents" element={<ProtectedShell><DocumentsPage /></ProtectedShell>} />
       <Route path="/portal" element={<ProtectedShell><PortalPage /></ProtectedShell>} />
       <Route path="/api" element={<ProtectedShell><ApiPage /></ProtectedShell>} />
+      <Route path="/rfq" element={<RequireAuth><RfqApp /></RequireAuth>} />
+      <Route path="/profile" element={<ProtectedShell><ProfilePage /></ProtectedShell>} />
+      <Route path="/admin/users" element={<ProtectedShell><RequireAdmin><AdminUsersPage /></RequireAdmin></ProtectedShell>} />
       <Route path="/finishing" element={<RequireAuth><FinishingControl /></RequireAuth>} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/finishing" replace />} />
     </Routes>
   );
 }
