@@ -356,6 +356,19 @@ export interface CurrentUser {
   role: string;
 }
 
+/** Fuller account record from /users — CurrentUser above stays as /auth/me returns it. */
+export interface AppUser {
+  id: number;
+  name: string;
+  initials: string;
+  email: string;
+  role: string;
+  is_active: boolean;
+  has_pin: boolean;
+  created_at: string;
+  last_login_at: string | null;
+}
+
 export interface ApiEndpoint {
   method: string;
   path: string;
@@ -606,4 +619,16 @@ export interface JobPlanningContext {
   drawing: DrawingAnalysis | null;
   po_line: PurchaseOrderLineItem | null;
   spec_mismatch: string | null;
+}
+
+export interface FinishRate {
+  id: number;
+  process: string;
+  spec: string;
+  rate_per_sq_in: string;
+  lot_minimum: string;
+  notes: string;
+  active: boolean;
+  updated_by: string;
+  updated_at: string | null;
 }

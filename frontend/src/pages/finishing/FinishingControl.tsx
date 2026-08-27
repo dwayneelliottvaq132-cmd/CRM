@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { sx } from "./sx";
 import {
@@ -46,6 +47,7 @@ const CSS = `
 .fc-h-fa:hover { background:#FAFAFB !important; }
 .fc-h-fc:hover { background:#FCFCFD !important; }
 .fc-h-gold:hover { background:#FAF6EC !important; }
+.fc-erp-link:hover { color:#E8B84B !important; border-color:#5A4A1E !important; }
 .fc-h-bd:hover { border-color:#9A6B00 !important; }
 `;
 
@@ -185,6 +187,16 @@ export function FinishingControl() {
             {strict ? "strict" : "bypassed"}
           </button>
         </div>
+        {/* Way out to the ERP. RFQ Intake is the landing page now, so this is how
+            the back-office screens are reached from here without typing a URL. */}
+        <Link
+          to="/dashboard"
+          className="fc-erp-link"
+          style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.06em", color: "#8C8C94", textDecoration: "none", border: "1px solid #3A3A40", borderRadius: 3, padding: "3px 9px" }}
+        >
+          ERP →
+        </Link>
+
         <div style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 6, borderLeft: "1px solid #3A3A40" }}>
           <div title={user?.role ?? ""} style={{ width: 22, height: 22, borderRadius: "50%", background: "#9A6B00", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#fff" }}>{userInitials}</div>
           <span style={{ fontSize: 11 }}>{userName}</span>

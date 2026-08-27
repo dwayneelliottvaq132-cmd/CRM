@@ -22,3 +22,4 @@ from app.models.attachment import Attachment  # noqa: E402,F401
 from app.models.integration import QuickBooksConnection, EmailIntakeState, EmailIntakeLog  # noqa: E402,F401
 
 __all__ = ["Base"]
+from app.models.rate import FinishRate  # noqa: E402,F401
