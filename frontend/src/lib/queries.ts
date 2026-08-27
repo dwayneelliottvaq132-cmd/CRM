@@ -34,6 +34,8 @@ export const qk = {
   planningContext: (jobId: string) => ["planningContext", jobId],
   batchCandidates: (jobId: string) => ["batchCandidates", jobId],
   attachments: (entityType: string, entityId: number | string) => ["attachments", entityType, entityId],
+  myProfile: ["myProfile"],
+  users: ["users"],
 } as const;
 
 export const useDashboard = () => useQuery({ queryKey: qk.dashboard, queryFn: api.dashboardSummary, refetchInterval: 30_000 });
@@ -63,6 +65,8 @@ export const useCustomers = () => useQuery({ queryKey: qk.customers, queryFn: ()
 export const usePortalPreview = (id: number | undefined) =>
   useQuery({ queryKey: qk.portalPreview(id ?? -1), queryFn: () => api.portalPreview(id as number), enabled: !!id });
 export const useAuditLog = () => useQuery({ queryKey: qk.auditLog, queryFn: () => api.auditLog(100) });
+export const useMyProfile = () => useQuery({ queryKey: qk.myProfile, queryFn: api.getMyProfile });
+export const useUsers = () => useQuery({ queryKey: qk.users, queryFn: api.listUsers });
 export const useApiEndpoints = () => useQuery({ queryKey: qk.apiEndpoints, queryFn: api.apiEndpoints });
 export const useIntegrationInfo = () => useQuery({ queryKey: qk.integrationInfo, queryFn: api.integrationInfo });
 export const useRoutingTemplates = () => useQuery({ queryKey: qk.routingTemplates, queryFn: () => api.listRoutingTemplates() });
@@ -694,5 +698,37 @@ export function useObsoleteRevision() {
       if (vars.templateId) qc.invalidateQueries({ queryKey: qk.templateRevisions(vars.templateId) });
       if (vars.partId) qc.invalidateQueries({ queryKey: qk.partRevisions(vars.partId) });
     },
+  });
+}
+
+export function useUpdateMyProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: api.updateMyProfile,
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.myProfile }),
+  });
+}
+
+export function useCreateUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: api.createUser,
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.users }),
+  });
+}
+
+export function useUpdateUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: number; body: Parameters<typeof api.updateUser>[1] }) => api.updateUser(id, body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.users }),
+  });
+}
+
+export function useEnrollPin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, pin }: { id: number; pin: string }) => api.enrollPin(id, pin),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.users }),
   });
 }

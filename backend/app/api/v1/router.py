@@ -21,6 +21,7 @@ from app.api.v1 import (
     portal,
     purchase_orders,
     routing,
+    users,
 )
 
 # Compliance and QuickBooks are hidden, not removed: app/api/v1/compliance.py and
@@ -34,6 +35,7 @@ api_router.include_router(auth.router)
 api_router.include_router(oauth.router)
 api_router.include_router(dashboard.router)
 api_router.include_router(customers.router)
+api_router.include_router(users.router)
 api_router.include_router(orders.router)
 api_router.include_router(jobs.router)
 api_router.include_router(routing.router)

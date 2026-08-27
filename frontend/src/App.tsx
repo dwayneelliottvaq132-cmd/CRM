@@ -20,6 +20,8 @@ import { VendorsPage } from "./pages/VendorsPage";
 import { DocumentsPage } from "./pages/DocumentsPage";
 import { PortalPage } from "./pages/PortalPage";
 import { ApiPage } from "./pages/ApiPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { AdminUsersPage } from "./pages/AdminUsersPage";
 import { FinishingControl } from "./pages/finishing/FinishingControl";
 import { RequireAuth } from "./pages/finishing/RequireAuth";
 
@@ -28,6 +30,21 @@ function ProtectedShell({ children }: { children: React.ReactNode }) {
   if (loading) return <div style={{ padding: 40, fontFamily: "'IBM Plex Sans', sans-serif" }}>Loading…</div>;
   if (!user) return <Navigate to="/login" replace />;
   return <Layout>{children}</Layout>;
+}
+
+// Nav already hides the "Users & Admin" link for non-admins (Layout.tsx); this catches
+// direct navigation to the URL. The backend is the real gate — every /users admin
+// endpoint carries require_role("Admin") independently of this check.
+function RequireAdmin({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  if (user?.role !== "Admin") {
+    return (
+      <div style={{ padding: 40, fontSize: 13, color: "#5E686E" }}>
+        You don't have access to this page. Admin role required.
+      </div>
+    );
+  }
+  return <>{children}</>;
 }
 
 export default function App() {
@@ -56,6 +73,8 @@ export default function App() {
       <Route path="/documents" element={<ProtectedShell><DocumentsPage /></ProtectedShell>} />
       <Route path="/portal" element={<ProtectedShell><PortalPage /></ProtectedShell>} />
       <Route path="/api" element={<ProtectedShell><ApiPage /></ProtectedShell>} />
+      <Route path="/profile" element={<ProtectedShell><ProfilePage /></ProtectedShell>} />
+      <Route path="/admin/users" element={<ProtectedShell><RequireAdmin><AdminUsersPage /></RequireAdmin></ProtectedShell>} />
       <Route path="/finishing" element={<RequireAuth><FinishingControl /></RequireAuth>} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>

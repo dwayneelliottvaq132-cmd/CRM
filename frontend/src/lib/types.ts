@@ -356,6 +356,19 @@ export interface CurrentUser {
   role: string;
 }
 
+/** Fuller account record from /users — CurrentUser above stays as /auth/me returns it. */
+export interface AppUser {
+  id: number;
+  name: string;
+  initials: string;
+  email: string;
+  role: string;
+  is_active: boolean;
+  has_pin: boolean;
+  created_at: string;
+  last_login_at: string | null;
+}
+
 export interface ApiEndpoint {
   method: string;
   path: string;

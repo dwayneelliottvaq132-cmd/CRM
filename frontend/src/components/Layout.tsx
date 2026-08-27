@@ -36,6 +36,11 @@ const NAV_ITEMS: NavItem[] = [
   { key: "documents", icon: "¶", label: "Doc Control", path: "/documents" },
   { key: "portal", icon: "◉", label: "Customer Portal", path: "/portal" },
   { key: "api", icon: "</>", label: "API & Integrations", path: "/api" },
+  { key: "profile", icon: "◍", label: "My Profile", path: "/profile" },
+  // Admin-only: filtered out below for anyone whose role isn't "Admin". The backend
+  // enforces this independently (require_role("Admin") on every /users admin endpoint) —
+  // hiding the link is a convenience, not the actual gate.
+  { key: "adminUsers", icon: "⚙", label: "Users & Admin", path: "/admin/users" },
 ];
 
 const TITLES: Record<string, [string, string]> = {
@@ -55,6 +60,8 @@ const TITLES: Record<string, [string, string]> = {
   documents: ["Document Control", "controlled QMS documents"],
   portal: ["Customer Portal", "external view preview"],
   api: ["API & Integrations", "erp.texasprecision.net/api/v1"],
+  profile: ["My Profile", "account details · password"],
+  adminUsers: ["Users & Admin", "accounts, roles, shop-floor PINs"],
 };
 
 function useBadges(): Record<string, string> {
@@ -92,6 +99,7 @@ export function Layout({ children, showItarBanner = true }: { children: ReactNod
   const { user, logout } = useAuth();
   const location = useLocation();
   const badges = useBadges();
+  const visibleNavItems = NAV_ITEMS.filter((n) => n.key !== "adminUsers" || user?.role === "Admin");
   const activeKey = NAV_ITEMS.find((n) => location.pathname.startsWith(n.path))?.key ?? "dashboard";
   const [title, sub] = TITLES[activeKey] ?? TITLES.dashboard;
 
@@ -105,7 +113,7 @@ export function Layout({ children, showItarBanner = true }: { children: ReactNod
           <div style={{ fontFamily: fontMono, fontSize: 10, color: "#6E7B84", marginTop: 3 }}>NADCAP · AS9100D · ITAR</div>
         </div>
         <div style={{ padding: "8px 0", flex: 1 }}>
-          {NAV_ITEMS.map((nv) => {
+          {visibleNavItems.map((nv) => {
             const active = nv.key === activeKey;
             const badge = badges[nv.key];
             return (
