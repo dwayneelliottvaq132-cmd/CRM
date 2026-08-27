@@ -607,3 +607,15 @@ export interface JobPlanningContext {
   po_line: PurchaseOrderLineItem | null;
   spec_mismatch: string | null;
 }
+
+export interface FinishRate {
+  id: number;
+  process: string;
+  spec: string;
+  rate_per_sq_in: string;
+  lot_minimum: string;
+  notes: string;
+  active: boolean;
+  updated_by: string;
+  updated_at: string | null;
+}

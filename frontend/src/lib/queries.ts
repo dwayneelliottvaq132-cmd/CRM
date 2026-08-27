@@ -696,3 +696,23 @@ export function useObsoleteRevision() {
     },
   });
 }
+
+// ---- finish rates ------------------------------------------------------------------------
+export const useRates = () => useQuery({ queryKey: ["rates"], queryFn: api.listRates });
+
+export function useSaveRate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id?: number; body: Partial<import("./types").FinishRate> }) =>
+      id ? api.updateRate(id, body) : api.createRate(body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["rates"] }),
+  });
+}
+
+export function useDeleteRate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: api.deleteRate,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["rates"] }),
+  });
+}

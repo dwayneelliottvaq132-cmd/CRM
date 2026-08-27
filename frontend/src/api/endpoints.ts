@@ -1,5 +1,6 @@
 import { http } from "./client";
 import type {
+  FinishRate,
   ApiEndpoint,
   Attachment,
   AuditLogEntry,
@@ -580,4 +581,21 @@ export async function deleteAttachment(id: number) {
 export async function getAttachmentFileBlob(id: number) {
   const { data } = await http.get(`/attachments/${id}/file`, { responseType: "blob" });
   return data as Blob;
+}
+
+// ---- finish rates (admin-editable pricing table) -----------------------------------------
+export async function listRates() {
+  const { data } = await http.get<FinishRate[]>("/rates");
+  return data;
+}
+export async function createRate(body: Partial<FinishRate>) {
+  const { data } = await http.post<FinishRate>("/rates", body);
+  return data;
+}
+export async function updateRate(id: number, body: Partial<FinishRate>) {
+  const { data } = await http.patch<FinishRate>(`/rates/${id}`, body);
+  return data;
+}
+export async function deleteRate(id: number) {
+  await http.delete(`/rates/${id}`);
 }

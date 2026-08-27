@@ -12,6 +12,7 @@ import {
 } from "../../lib/queries";
 import { useAuth } from "../../context/AuthContext";
 import type { DrawingAnalysis, DrawingBatchResult, EmailIntakeLogEntry, PurchaseOrderAnalysis } from "../../lib/types";
+import { RatesTable } from "./RatesTable";
 
 /** Emails → RFQs → surface area, on one screen.
  *
@@ -488,7 +489,7 @@ export function RfqApp() {
         </button>
       </header>
 
-      <main style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 12, padding: 12 }}>
+      <main style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr auto", gap: 12, padding: 12, overflow: "auto" }}>
         <div style={{ gridRow: "1 / 3", minHeight: 0, display: "flex" }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <Emails />
@@ -496,6 +497,9 @@ export function RfqApp() {
         </div>
         <SurfaceArea />
         <Rfqs />
+        <div style={{ gridColumn: "1 / 3", minHeight: 0 }}>
+          <RatesTable />
+        </div>
       </main>
     </div>
   );
