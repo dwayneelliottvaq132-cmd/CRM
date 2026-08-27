@@ -3,13 +3,15 @@ import { colors, fontMono } from "../lib/theme";
 import { useDashboard } from "../lib/queries";
 import { Card, CardHeader } from "../components/Table";
 
+/** Tiles with no entry here are informational only and render un-clickable.
+ *  `ncrs` lost its target when the Compliance screen was unrouted — the count still
+ *  comes from live NCR data, so the tile stays and simply stops navigating. Re-adding
+ *  `ncrs: "/compliance"` restores the link along with the route. */
 const KPI_ROUTE: Record<string, string> = {
   wip: "/travelers",
   due48: "/travelers",
-  ncrs: "/compliance",
   tanks_ooc: "/chemistry",
   cal_overdue: "/calibration",
-  unsynced: "/invoicing",
 };
 
 const KIND_COLOR: Record<string, string> = {
@@ -35,25 +37,28 @@ export function DashboardPage() {
 
   return (
     <section>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12 }}>
-        {data.kpis.map((k) => (
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
+        {data.kpis.map((k) => {
+          const route = KPI_ROUTE[k.key];
+          return (
           <div
             key={k.key}
-            className="card-hover"
-            onClick={() => navigate(KPI_ROUTE[k.key] ?? "/dashboard")}
+            className={route ? "card-hover" : undefined}
+            onClick={route ? () => navigate(route) : undefined}
             style={{
               background: "#FFFFFF",
               border: `1px solid ${colors.cardBorder}`,
               borderTop: `3px solid ${KIND_EDGE[k.kind] ?? colors.gray}`,
               borderRadius: 6,
               padding: "12px 14px",
-              cursor: "pointer",
+              cursor: route ? "pointer" : "default",
             }}
           >
             <div style={{ fontSize: 26, fontWeight: 700, fontFamily: fontMono, color: KIND_COLOR[k.kind] ?? colors.text }}>{k.value}</div>
             <div style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>{k.label}</div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 16, marginTop: 16 }}>
