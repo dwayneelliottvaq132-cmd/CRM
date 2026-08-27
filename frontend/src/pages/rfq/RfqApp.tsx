@@ -1,11 +1,13 @@
 import { useRef, useState } from "react";
 import {
   useAnalyzeDrawingsBatch,
+  useAnalyzePo,
   useDrawingAiStatus,
   useDrawingAnalyses,
   useEmailIntakeLog,
   useEmailIntakeStatus,
   usePoAnalyses,
+  usePoStatus,
   usePollEmailIntakeNow,
 } from "../../lib/queries";
 import { useAuth } from "../../context/AuthContext";
@@ -167,13 +169,77 @@ function Emails() {
 
 function Rfqs() {
   const { data: pos, isLoading } = usePoAnalyses();
+  const { data: poAi } = usePoStatus();
+  const analyzePo = useAnalyzePo();
+  const poRef = useRef<HTMLInputElement>(null);
+  const dwgRef = useRef<HTMLInputElement>(null);
+  const [poFile, setPoFile] = useState<File | null>(null);
+  const [poErr, setPoErr] = useState<string | null>(null);
+
+  /** The PO is scanned together with its drawings in one call, so the drawings
+   *  are matched to their lines by part number server-side. Picking the PO
+   *  arms the drawing picker rather than sending immediately. */
+  async function sendPo(drawingFiles: File[]) {
+    if (!poFile) return;
+    setPoErr(null);
+    try {
+      await analyzePo.mutateAsync({ poFile, drawingFiles });
+      setPoFile(null);
+    } catch (e: unknown) {
+      const detail = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      setPoErr(detail ?? "PO scan failed.");
+    }
+  }
 
   return (
-    <Panel title="RFQs" sub="purchase orders read by the scanner">
+    <Panel
+      title="RFQs"
+      sub={poAi ? (poAi.configured ? "purchase orders read by the scanner" : "AI not configured") : ""}
+      action={
+        <Btn tone="primary" onClick={() => poRef.current?.click()} disabled={!poAi?.configured || analyzePo.isPending}>
+          {analyzePo.isPending ? "SCANNING…" : "SCAN PO"}
+        </Btn>
+      }
+    >
+      <input
+        ref={poRef}
+        type="file"
+        accept="application/pdf"
+        style={{ display: "none" }}
+        onChange={(e) => {
+          const f = e.target.files?.[0] ?? null;
+          e.target.value = "";
+          if (!f) return;
+          setPoFile(f);
+          dwgRef.current?.click();
+        }}
+      />
+      <input
+        ref={dwgRef}
+        type="file"
+        accept="application/pdf"
+        multiple
+        style={{ display: "none" }}
+        onChange={(e) => {
+          const files = Array.from(e.target.files ?? []);
+          e.target.value = "";
+          void sendPo(files);
+        }}
+      />
+
+      {poFile && analyzePo.isPending ? (
+        <div style={{ margin: "10px 14px", padding: "8px 11px", borderRadius: 4, background: "#FDFBF5", border: "1px solid #EDE5D2", fontFamily: MONO, fontSize: 10, color: GOLD }}>
+          Scanning {poFile.name} and its drawings — vision analysis can take a couple of minutes.
+        </div>
+      ) : null}
+      {poErr ? (
+        <div style={{ margin: "10px 14px", padding: "8px 11px", borderRadius: 4, background: "#FFF8F7", border: "1px solid #F5DEDB", fontFamily: MONO, fontSize: 10, color: RED }}>{poErr}</div>
+      ) : null}
+
       {isLoading ? (
         <Empty>Loading…</Empty>
       ) : !pos?.length ? (
-        <Empty>No purchase orders scanned yet.</Empty>
+        <Empty>No purchase orders scanned yet. SCAN PO takes the PO first, then its drawings — they are read together so each drawing matches its line by part number.</Empty>
       ) : (
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
@@ -220,6 +286,17 @@ function Rfqs() {
 
 /* ------------------------------------------------------------ surface area */
 
+const RATE_KEY = "tpp.rfq.ratePerSqIn";
+const MIN_KEY = "tpp.rfq.lotMinimum";
+
+function loadNum(key: string): string {
+  try {
+    return window.localStorage.getItem(key) ?? "";
+  } catch {
+    return "";
+  }
+}
+
 function SurfaceArea() {
   const { data: ai } = useDrawingAiStatus();
   const { data: drawings, isLoading } = useDrawingAnalyses();
@@ -227,6 +304,32 @@ function SurfaceArea() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [results, setResults] = useState<DrawingBatchResult[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
+
+  /** Rate and lot minimum are yours to set — no rate card exists in this codebase
+   *  and none is invented here. Kept per-browser so they survive a reload. */
+  const [rate, setRate] = useState(() => loadNum(RATE_KEY));
+  const [lotMin, setLotMin] = useState(() => loadNum(MIN_KEY));
+
+  function persist(key: string, v: string, set: (s: string) => void) {
+    set(v);
+    try {
+      window.localStorage.setItem(key, v);
+    } catch {
+      /* private browsing — the value still applies for this session */
+    }
+  }
+
+  const rateNum = parseFloat(rate);
+  const minNum = parseFloat(lotMin);
+
+  /** area x rate, floored at the lot minimum. Returns null when there is nothing
+   *  to compute from, so the column reads "—" rather than a misleading $0.00. */
+  function priceOf(area: number | null): { value: number; floored: boolean } | null {
+    if (area == null || !Number.isFinite(rateNum) || rateNum <= 0) return null;
+    const raw = area * rateNum;
+    if (Number.isFinite(minNum) && minNum > 0 && raw < minNum) return { value: minNum, floored: true };
+    return { value: raw, floored: false };
+  }
 
   async function send(files: File[]) {
     if (!files.length) return;
@@ -249,9 +352,25 @@ function SurfaceArea() {
       title="Surface area"
       sub={ai ? (ai.configured ? `drawing scan · ${ai.model}` : "AI not configured") : ""}
       action={
-        <Btn tone="primary" onClick={() => inputRef.current?.click()} disabled={!ai?.configured || analyze.isPending}>
-          {analyze.isPending ? "SCANNING…" : "SCAN DRAWINGS"}
-        </Btn>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <label style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.1em", color: FAINT }}>$/IN²</label>
+          <input
+            value={rate}
+            onChange={(e) => persist(RATE_KEY, e.target.value.replace(/[^0-9.]/g, ""), setRate)}
+            placeholder="0.00"
+            style={{ width: 62, fontFamily: MONO, fontSize: 11, textAlign: "right", color: INK, border: `1px solid ${LINE}`, borderRadius: 3, padding: "4px 6px", outline: "none" }}
+          />
+          <label style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.1em", color: FAINT }}>LOT MIN</label>
+          <input
+            value={lotMin}
+            onChange={(e) => persist(MIN_KEY, e.target.value.replace(/[^0-9.]/g, ""), setLotMin)}
+            placeholder="0.00"
+            style={{ width: 62, fontFamily: MONO, fontSize: 11, textAlign: "right", color: INK, border: `1px solid ${LINE}`, borderRadius: 3, padding: "4px 6px", outline: "none" }}
+          />
+          <Btn tone="primary" onClick={() => inputRef.current?.click()} disabled={!ai?.configured || analyze.isPending}>
+            {analyze.isPending ? "SCANNING…" : "SCAN DRAWINGS"}
+          </Btn>
+        </div>
       }
     >
       <input
@@ -295,6 +414,7 @@ function SurfaceArea() {
               <th style={TH}>PART</th>
               <th style={TH}>MATERIAL</th>
               <th style={{ ...TH, textAlign: "right" }}>AREA (IN²)</th>
+              <th style={{ ...TH, textAlign: "right" }}>PRICE</th>
               <th style={TH}>METHOD</th>
             </tr>
           </thead>
@@ -321,6 +441,18 @@ function SurfaceArea() {
                       />
                     </div>
                   ) : null}
+                </td>
+                <td style={{ ...TD, textAlign: "right", whiteSpace: "nowrap" }}>
+                  {(() => {
+                    const p = priceOf(d.surface_area_sq_in);
+                    if (!p) return <span style={{ fontFamily: MONO, fontSize: 11, color: FAINT }}>—</span>;
+                    return (
+                      <>
+                        <span style={{ fontFamily: MONO, fontSize: 13, fontWeight: 700, color: INK }}>${p.value.toFixed(2)}</span>
+                        {p.floored ? <div style={{ marginTop: 4 }}><Chip text="lot min" tone="warn" /></div> : null}
+                      </>
+                    );
+                  })()}
                 </td>
                 <td style={{ ...TD, fontFamily: MONO, fontSize: 10, color: MUTED, lineHeight: 1.5 }}>
                   {d.surface_area_method ?? (d.error_detail ? <span style={{ color: RED }}>{d.error_detail}</span> : "—")}
