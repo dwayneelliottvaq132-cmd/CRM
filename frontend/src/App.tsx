@@ -35,7 +35,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      {/* Finishing Control is home. The ERP keeps all of its own routes. */}
+      <Route path="/" element={<Navigate to="/finishing" replace />} />
       <Route path="/dashboard" element={<ProtectedShell><DashboardPage /></ProtectedShell>} />
       <Route path="/quoting" element={<ProtectedShell><QuotingPage /></ProtectedShell>} />
       <Route path="/sales-orders" element={<ProtectedShell><SalesOrdersPage /></ProtectedShell>} />
@@ -59,7 +60,7 @@ export default function App() {
       <Route path="/portal" element={<ProtectedShell><PortalPage /></ProtectedShell>} />
       <Route path="/api" element={<ProtectedShell><ApiPage /></ProtectedShell>} />
       <Route path="/finishing" element={<RequireAuth><FinishingControl /></RequireAuth>} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/finishing" replace />} />
     </Routes>
   );
 }
