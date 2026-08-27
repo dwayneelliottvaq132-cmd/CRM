@@ -20,12 +20,11 @@ export const FLWRAP = {
 export const VAL = "font-family:'Space Mono',monospace; font-size:11.5px; line-height:1.45";
 export const VAL_MISS = "font-family:'Space Mono',monospace; font-size:11.5px; line-height:1.45; color:#B3261E";
 
-// NOTE: the source design has one call — f('AREA / PART', 'not on print', true) —
-// that passes the "missing" flag into the `sub` slot. Taken literally it would render
-// the word "true" as the caption and skip the red styling, so a boolean `sub` is
-// treated as `miss`, which is plainly what was meant.
-export function f(k: string, v: string, sub?: string | boolean, miss?: boolean) {
-  if (typeof sub === 'boolean') { miss = sub; sub = ''; }
+// NOTE: PO 243882 ln 2 AREA / PART reads f(k, v, true) in the source design —
+// the "missing" flag landed in the `sub` slot, which would render the word "true"
+// as the caption and leave the value un-flagged. Corrected to f(k, v, '', true)
+// above; fix it in the design too so the two do not diverge.
+export function f(k: string, v: string, sub?: string, miss?: boolean) {
   return { k, v, sub: sub || '', style: miss ? VAL_MISS : VAL };
 }
 
@@ -291,7 +290,7 @@ export const DOCS = [
           f('THICKNESS', '.0001–.0002 in total', 'below any published B733 grade', true),
           f('DRAWING', '217-104-1H10 rev H', 'rev H on file — match'),
           f('PRE-TREAT', 'not called out', 'Wood’s nickel strike expected on stainless', true),
-          f('AREA / PART', 'not on print', true),
+          f('AREA / PART', 'not on print', '', true),
           f('C OF C', 'required'),
           f('FAI', 'yes')
         ],
