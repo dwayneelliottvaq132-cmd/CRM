@@ -8,9 +8,31 @@ import {
   DOCS, DWG_FOLDERS, DWGS, QUOTE_ROWS, STEPS, MAILS, SPECS, PROCS, BTN, JOBS, ST_STYLE,
 } from "./designData";
 
-/** Quoting policy. The design exposes this as an editable prop defaulting to
- *  `this.props.strictGate ?? true` — i.e. the gate is on unless deliberately relaxed. */
-const STRICT_GATE = true;
+/** Quoting policy — the design exposes this as an editable `strictGate` prop; here it is
+ *  a runtime switch in the header rather than a build-time constant.
+ *
+ *  strict   = a line is refused until every quoting input is resolved ("can't price yet").
+ *  bypassed = the line prices with its open inputs carried as exceptions instead of
+ *             blocking. The inputs are still named; they just no longer stop the quote.
+ *
+ *  Defaults to STRICT. Bypass is a deliberate per-person choice, not the resting state:
+ *  the blocked lines encode real defects read off real purchase orders. */
+const GATE_KEY = "tpp.finishing.strictGate";
+
+function loadGate(): boolean {
+  try {
+    return window.localStorage.getItem(GATE_KEY) !== "bypass";
+  } catch {
+    return true; // private window, blocked site data, thumbnailer — fail safe, gate on
+  }
+}
+function saveGate(strict: boolean) {
+  try {
+    window.localStorage.setItem(GATE_KEY, strict ? "strict" : "bypass");
+  } catch {
+    /* non-fatal: the switch still applies for this session */
+  }
+}
 
 type Screen = "rfq" | "quote" | "queue" | "review" | "inspect" | "drawings" | "specs" | "procs";
 
@@ -90,6 +112,13 @@ export function FinishingControl() {
   const [mailIdx, setMailIdx] = useState(0);
   const [dwgFolder, setDwgFolder] = useState("all");
   const [fromQuote, setFromQuote] = useState<string | null>(null);
+  const [strict, setStrict] = useState<boolean>(loadGate);
+
+  const toggleGate = () => {
+    const next = !strict;
+    setStrict(next);
+    saveGate(next);
+  };
 
   // The design hard-codes "Doug Gordon" / "DG". Show whoever is actually signed in —
   // RequireAuth guarantees a user here, so the fallbacks only cover a torn-down session.
@@ -139,8 +168,27 @@ export function FinishingControl() {
           <span style={{ fontFamily: MONO }}>Rate card:</span>
           <span style={{ fontFamily: MONO, color: "#E8B84B", border: "1px solid #5A4A1E", background: "#241E0C", padding: "2px 7px", borderRadius: 3 }}>not loaded</span>
         </div>
-        {/* Way out to the ERP. Finishing Control is the landing page, so without
-            this the back-office screens would only be reachable by typing a URL. */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, color: "#8C8C94", paddingLeft: 6, borderLeft: "1px solid #3A3A40" }}>
+          <span style={{ fontFamily: MONO }}>Quoting gate:</span>
+          <button
+            onClick={toggleGate}
+            aria-pressed={!strict}
+            title={strict
+              ? "Strict: a line is refused until every quoting input is resolved. Click to bypass."
+              : "BYPASSED: lines price with open inputs carried as exceptions. Click to restore the gate."}
+            style={{
+              fontFamily: MONO, fontSize: 10, letterSpacing: "0.06em", cursor: "pointer",
+              padding: "2px 9px", borderRadius: 3,
+              color: strict ? "#7FD1A8" : "#F2A0A0",
+              background: strict ? "#0F241A" : "#2B1214",
+              border: `1px solid ${strict ? "#2C5C44" : "#7A2E33"}`,
+            }}
+          >
+            {strict ? "strict" : "bypassed"}
+          </button>
+        </div>
+        {/* Way out to the ERP. RFQ Intake is the landing page now, so this is how
+            the back-office screens are reached from here without typing a URL. */}
         <Link
           to="/dashboard"
           className="fc-erp-link"
@@ -148,6 +196,7 @@ export function FinishingControl() {
         >
           ERP →
         </Link>
+
         <div style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 6, borderLeft: "1px solid #3A3A40" }}>
           <div title={user?.role ?? ""} style={{ width: 22, height: 22, borderRadius: "50%", background: "#9A6B00", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#fff" }}>{userInitials}</div>
           <span style={{ fontSize: 11 }}>{userName}</span>
@@ -184,14 +233,14 @@ export function FinishingControl() {
           {screen === "queue" && <PlanningDev go={go} />}
           {screen === "review" && (
             <PoReview
-              doc={doc} viewer={viewer} setViewer={setViewer} tab={tab}
+              doc={doc} viewer={viewer} setViewer={setViewer} tab={tab} strict={strict}
               backLabel={fromQuote ? `quote ${fromQuote}` : "quote"}
               onBack={() => go("quote")}
               onPrev={() => { setDocIdx((docIdx + DOCS.length - 1) % DOCS.length); setViewer("po"); }}
               onNext={() => { setDocIdx((docIdx + 1) % DOCS.length); setViewer("po"); }}
             />
           )}
-          {screen === "quote" && <QuoteView onOpen={openDoc} />}
+          {screen === "quote" && <QuoteView onOpen={openDoc} strict={strict} />}
           {screen === "inspect" && <TravelerView />}
           {screen === "specs" && <SpecsView />}
           {screen === "procs" && <ProcsView />}
@@ -401,10 +450,10 @@ function PlanningDev({ go }: { go: (s: Screen) => void }) {
 
 /* ─── PO review (split viewer) ──────────────────────────────────────────── */
 
-function PoReview({ doc, viewer, setViewer, tab, backLabel, onBack, onPrev, onNext }: any) {
+function PoReview({ doc, viewer, setViewer, tab, strict, backLabel, onBack, onPrev, onNext }: any) {
   const lines = doc.lines.map((ln: any) => ({
     ...ln,
-    priceState: STRICT_GATE ? ln.priceState : ln.priceKey === "open" ? "price with exceptions" : ln.priceState,
+    priceState: strict ? ln.priceState : ln.priceKey === "open" ? "price with exceptions" : ln.priceState,
   }));
   const src = (viewer === "po" ? doc.po : doc.dwg) + "#view=Fit&toolbar=0";
 
@@ -495,20 +544,44 @@ function PoReview({ doc, viewer, setViewer, tab, backLabel, onBack, onPrev, onNe
 
 const QCOLS = "92px 74px 132px minmax(180px,1fr) 58px 78px 84px 74px 84px 190px";
 
-function QuoteView({ onOpen }: { onOpen: (i: number, from?: string) => void }) {
+/** With the gate on, an unresolved line is refused. With it off, the same line prices
+ *  and its open inputs are carried as an exception instead of a block. */
+function quoteChip(key: string, strict: boolean) {
+  if (key === "ready") return S.ready;
+  if (key === "info") return S.info;
+  return strict ? S.open : S.review;
+}
+function quoteLabel(key: string, label: string, strict: boolean) {
+  if (key === "ready" || key === "info" || strict) return label;
+  return `priced — ${label}`;
+}
+
+function QuoteView({ onOpen, strict }: { onOpen: (i: number, from?: string) => void; strict: boolean }) {
+  const readyCount = QUOTE_ROWS.filter((r: any[]) => r[9] === "ready").length;
+  const exceptionCount = QUOTE_ROWS.filter((r: any[]) => r[9] === "open").length;
+  const openInputCount = QUOTE_ROWS
+    .filter((r: any[]) => r[9] === "open")
+    .reduce((n: number, r: any[]) => n + (parseInt(String(r[10]), 10) || 0), 0);
+
   return (
     <div style={{ padding: "22px 26px 40px" }}>
       <PageHead
         title="Quote"
         meta="11 quoted lines · one raised against parts received without a purchase order"
-        lede="A line prices only when every quoting input is resolved. Where the rate card has no published row, the line is routed rather than interpolated."
+        lede={strict
+          ? "A line prices only when every quoting input is resolved. Where the rate card has no published row, the line is routed rather than interpolated."
+          : "Quoting gate is off: lines price with their open inputs carried as exceptions rather than blocking. The open inputs are still recorded on each line — check them before the quote leaves."}
         maxWidth={660}
       />
 
       <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
-        <Stat label="READY TO PRICE" value="1" color={GREEN} />
-        <Stat label="BLOCKED" value="9" color={RED} />
-        <Stat label="OPEN INPUTS" value="21" />
+        <Stat label="READY TO PRICE" value={String(readyCount)} color={GREEN} />
+        <Stat
+          label={strict ? "BLOCKED" : "WITH EXCEPTIONS"}
+          value={String(strict ? exceptionCount : 0)}
+          color={strict ? RED : GREEN}
+        />
+        <Stat label="OPEN INPUTS" value={String(openInputCount)} color={strict ? undefined : OCHRE} />
         <div style={{ flex: 1, minWidth: 240, background: "#FAF6EC", border: "1px solid #EADFC4", borderRadius: 5, padding: "11px 15px" }}>
           <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.08em", color: OCHRE }}>RATE CARD</div>
           <div style={{ fontSize: 11.5, color: "#4A4A52", lineHeight: 1.5, marginTop: 4 }}>
@@ -546,7 +619,7 @@ function QuoteView({ onOpen }: { onOpen: (i: number, from?: string) => void }) {
               <div style={{ padding: "9px 10px", fontFamily: MONO, textAlign: "right" }}>{r[7]}</div>
               <div style={{ padding: "9px 10px", fontFamily: MONO, textAlign: "right" }}>{r[8]}</div>
               <div style={{ padding: "7px 10px" }}>
-                <span style={sx((S as any)[r[9] === "ready" ? "ready" : r[9] === "info" ? "info" : "open"])}>{r[10]}</span>
+                <span style={sx(quoteChip(r[9] as string, strict))}>{quoteLabel(r[9] as string, r[10] as string, strict)}</span>
               </div>
             </div>
           );
