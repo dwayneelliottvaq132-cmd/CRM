@@ -1,7 +1,7 @@
 """add finish_rates table
 
 Revision ID: b41c7d2e9a05
-Revises: 9dae8bea77b3
+Revises: ca2e6516d84d
 Create Date: 2026-08-27
 
 Per-process pricing rates ($/in² with a lot-charge floor), editable by Admin.
@@ -11,7 +11,11 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "b41c7d2e9a05"
-down_revision = "9dae8bea77b3"
+# Parented on ca2e6516d84d (users.last_login_at) rather than on 9dae8bea77b3.
+# Both were first written from the same parent, which gave alembic two heads
+# the moment they met. This branch carries that migration, so the chain is
+# linear and `alembic upgrade head` resolves without a merge revision.
+down_revision = "ca2e6516d84d"
 branch_labels = None
 depends_on = None
 

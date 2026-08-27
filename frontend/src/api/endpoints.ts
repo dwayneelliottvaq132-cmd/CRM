@@ -40,6 +40,7 @@ import type {
   TankAddition,
   TankAnalysis,
   Vendor,
+  AppUser,
 } from "../lib/types";
 
 // ---- auth ----------------------------------------------------------------
@@ -54,6 +55,32 @@ export async function login(email: string, password: string) {
 }
 export async function me() {
   const { data } = await http.get<CurrentUser>("/auth/me");
+  return data;
+}
+
+// ---- users / admin ---------------------------------------------------------
+export async function getMyProfile() {
+  const { data } = await http.get<AppUser>("/users/me");
+  return data;
+}
+export async function updateMyProfile(body: Partial<{ name: string; initials: string; current_password: string; new_password: string }>) {
+  const { data } = await http.patch<AppUser>("/users/me", body);
+  return data;
+}
+export async function listUsers() {
+  const { data } = await http.get<AppUser[]>("/users");
+  return data;
+}
+export async function createUser(body: { name: string; initials?: string; email: string; role: string; password: string }) {
+  const { data } = await http.post<AppUser>("/users", body);
+  return data;
+}
+export async function updateUser(id: number, body: Partial<{ name: string; initials: string; role: string; is_active: boolean; new_password: string }>) {
+  const { data } = await http.patch<AppUser>(`/users/${id}`, body);
+  return data;
+}
+export async function enrollPin(id: number, pin: string) {
+  const { data } = await http.post<AppUser>(`/users/${id}/pin`, { pin });
   return data;
 }
 

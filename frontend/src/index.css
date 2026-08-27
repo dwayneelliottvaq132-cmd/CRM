@@ -69,3 +69,6 @@ button {
   background: #c9cfc9;
   border-radius: 5px;
 }
+
+/* Row hover for tables rendered in the Finishing Control language (components/FcKit). */
+.fc-row:hover { background: #FAFAFB; }
