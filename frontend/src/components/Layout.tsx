@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { colors, fontMono, fontSans } from "../lib/theme";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -111,11 +111,7 @@ export function Layout({ children, showItarBanner = true }: { children: ReactNod
     <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
       <nav style={{ width: 216, flexShrink: 0, background: colors.sidebarBg, display: "flex", flexDirection: "column", overflowY: "auto" }}>
         <div style={{ padding: "18px 16px 14px 16px", borderBottom: `1px solid ${colors.sidebarBorder}` }}>
-          {/* The brand block doubles as the way home to Finishing Control, which is
-              the app's landing page — otherwise the ERP is a one-way trip. */}
-          <Link to="/finishing" style={{ textDecoration: "none" }} title="Back to Finishing Control">
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.02em" }}>TPP ERP</div>
-          </Link>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.02em" }}>TPP ERP</div>
           <div style={{ fontFamily: fontMono, fontSize: 10, color: "#6E7B84", marginTop: 3 }}>NADCAP · AS9100D · ITAR</div>
         </div>
         <div style={{ padding: "8px 0", flex: 1 }}>
