@@ -12,7 +12,7 @@ export function LoginPage() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  if (user) return <Navigate to={(location.state as { from?: string })?.from ?? "/dashboard"} replace />;
+  if (user) return <Navigate to={(location.state as { from?: string })?.from ?? "/rfq"} replace />;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -20,7 +20,7 @@ export function LoginPage() {
     setBusy(true);
     try {
       await login(email, password);
-      navigate("/dashboard", { replace: true });
+      navigate("/rfq", { replace: true });
     } catch {
       setError("Incorrect email or password.");
     } finally {

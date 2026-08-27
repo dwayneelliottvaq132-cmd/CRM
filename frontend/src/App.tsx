@@ -24,6 +24,7 @@ import { ProfilePage } from "./pages/ProfilePage";
 import { AdminUsersPage } from "./pages/AdminUsersPage";
 import { FinishingControl } from "./pages/finishing/FinishingControl";
 import { RequireAuth } from "./pages/finishing/RequireAuth";
+import { RfqApp } from "./pages/rfq/RfqApp";
 
 function ProtectedShell({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -51,7 +52,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/" element={<Navigate to="/rfq" replace />} />
       <Route path="/dashboard" element={<ProtectedShell><DashboardPage /></ProtectedShell>} />
       <Route path="/quoting" element={<ProtectedShell><QuotingPage /></ProtectedShell>} />
       <Route path="/sales-orders" element={<ProtectedShell><SalesOrdersPage /></ProtectedShell>} />
@@ -73,6 +74,7 @@ export default function App() {
       <Route path="/documents" element={<ProtectedShell><DocumentsPage /></ProtectedShell>} />
       <Route path="/portal" element={<ProtectedShell><PortalPage /></ProtectedShell>} />
       <Route path="/api" element={<ProtectedShell><ApiPage /></ProtectedShell>} />
+      <Route path="/rfq" element={<RequireAuth><RfqApp /></RequireAuth>} />
       <Route path="/profile" element={<ProtectedShell><ProfilePage /></ProtectedShell>} />
       <Route path="/admin/users" element={<ProtectedShell><RequireAdmin><AdminUsersPage /></RequireAdmin></ProtectedShell>} />
       <Route path="/finishing" element={<RequireAuth><FinishingControl /></RequireAuth>} />

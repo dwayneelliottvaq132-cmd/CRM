@@ -20,6 +20,7 @@ from app.api.v1 import (
     orders,
     portal,
     purchase_orders,
+    rates,
     routing,
     users,
 )
@@ -37,6 +38,7 @@ api_router.include_router(dashboard.router)
 api_router.include_router(customers.router)
 api_router.include_router(users.router)
 api_router.include_router(orders.router)
+api_router.include_router(rates.router)
 api_router.include_router(jobs.router)
 api_router.include_router(routing.router)
 api_router.include_router(chemistry.router)
