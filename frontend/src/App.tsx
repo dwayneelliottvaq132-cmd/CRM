@@ -12,7 +12,6 @@ import { PlanningPage } from "./pages/PlanningPage";
 import { TravelersPage } from "./pages/TravelersPage";
 import { ShopFloorPage } from "./pages/ShopFloorPage";
 import { ChemistryPage } from "./pages/ChemistryPage";
-import { CompliancePage } from "./pages/CompliancePage";
 import { CertsPage } from "./pages/CertsPage";
 import { InvoicingPage } from "./pages/InvoicingPage";
 import { CalibrationPage } from "./pages/CalibrationPage";
@@ -48,7 +47,6 @@ export default function App() {
       <Route path="/shopfloor/:jobId" element={<ProtectedShell><ShopFloorPage /></ProtectedShell>} />
       <Route path="/kiosk" element={<KioskShell><KioskScanPage /></KioskShell>} />
       <Route path="/chemistry" element={<ProtectedShell><ChemistryPage /></ProtectedShell>} />
-      <Route path="/compliance" element={<ProtectedShell><CompliancePage /></ProtectedShell>} />
       <Route path="/certs" element={<ProtectedShell><CertsPage /></ProtectedShell>} />
       <Route path="/invoicing" element={<ProtectedShell><InvoicingPage /></ProtectedShell>} />
       <Route path="/calibration" element={<ProtectedShell><CalibrationPage /></ProtectedShell>} />
