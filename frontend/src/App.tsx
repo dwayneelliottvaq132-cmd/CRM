@@ -21,6 +21,7 @@ import { VendorsPage } from "./pages/VendorsPage";
 import { DocumentsPage } from "./pages/DocumentsPage";
 import { PortalPage } from "./pages/PortalPage";
 import { ApiPage } from "./pages/ApiPage";
+import { FinishingControl } from "./pages/finishing/FinishingControl";
 
 function ProtectedShell({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -56,6 +57,7 @@ export default function App() {
       <Route path="/documents" element={<ProtectedShell><DocumentsPage /></ProtectedShell>} />
       <Route path="/portal" element={<ProtectedShell><PortalPage /></ProtectedShell>} />
       <Route path="/api" element={<ProtectedShell><ApiPage /></ProtectedShell>} />
+      <Route path="/finishing" element={<FinishingControl />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
