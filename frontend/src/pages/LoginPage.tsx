@@ -12,6 +12,8 @@ export function LoginPage() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
+  // RFQ Intake is the app's home; Finishing Control and the ERP live on at
+  // their own routes. A deep link the user was bounced off still wins.
   if (user) return <Navigate to={(location.state as { from?: string })?.from ?? "/rfq"} replace />;
 
   async function handleSubmit(e: React.FormEvent) {

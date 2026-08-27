@@ -52,6 +52,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      {/* RFQ Intake is home. Finishing Control and the ERP keep their own routes. */}
       <Route path="/" element={<Navigate to="/rfq" replace />} />
       <Route path="/dashboard" element={<ProtectedShell><DashboardPage /></ProtectedShell>} />
       <Route path="/quoting" element={<ProtectedShell><QuotingPage /></ProtectedShell>} />
@@ -78,7 +79,7 @@ export default function App() {
       <Route path="/profile" element={<ProtectedShell><ProfilePage /></ProtectedShell>} />
       <Route path="/admin/users" element={<ProtectedShell><RequireAdmin><AdminUsersPage /></RequireAdmin></ProtectedShell>} />
       <Route path="/finishing" element={<RequireAuth><FinishingControl /></RequireAuth>} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/rfq" replace />} />
     </Routes>
   );
 }
