@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 import { sx } from "./sx";
 import {
   OCHRE, RED, GREEN, BLUE,
@@ -88,6 +89,12 @@ export function FinishingControl() {
   const [dwgFolder, setDwgFolder] = useState("all");
   const [fromQuote, setFromQuote] = useState<string | null>(null);
 
+  // The design hard-codes "Doug Gordon" / "DG". Show whoever is actually signed in —
+  // RequireAuth guarantees a user here, so the fallbacks only cover a torn-down session.
+  const { user } = useAuth();
+  const userName = user?.name ?? "—";
+  const userInitials = user?.initials ?? "??";
+
   const go = (s: Screen) => setScreen(s);
   const openDoc = (i: number, from?: string) => {
     setDocIdx(i); setViewer("po"); setFromQuote(from ?? null); setScreen("review");
@@ -131,8 +138,8 @@ export function FinishingControl() {
           <span style={{ fontFamily: MONO, color: "#E8B84B", border: "1px solid #5A4A1E", background: "#241E0C", padding: "2px 7px", borderRadius: 3 }}>not loaded</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 6, borderLeft: "1px solid #3A3A40" }}>
-          <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#9A6B00", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#fff" }}>DG</div>
-          <span style={{ fontSize: 11 }}>Doug Gordon</span>
+          <div title={user?.role ?? ""} style={{ width: 22, height: 22, borderRadius: "50%", background: "#9A6B00", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#fff" }}>{userInitials}</div>
+          <span style={{ fontSize: 11 }}>{userName}</span>
         </div>
       </header>
 
