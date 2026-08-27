@@ -7,9 +7,14 @@ import {
   DOCS, DWG_FOLDERS, DWGS, QUOTE_ROWS, STEPS, MAILS, SPECS, PROCS, BTN, JOBS, ST_STYLE,
 } from "./designData";
 
-/** Quoting policy. The design exposes this as an editable prop defaulting to
- *  `this.props.strictGate ?? true` — i.e. the gate is on unless deliberately relaxed. */
-const STRICT_GATE = true;
+/** Quoting policy — the design exposes this as an editable `strictGate` prop.
+ *
+ *  true  = a line is refused until every quoting input is resolved ("can't price yet").
+ *  false = the line prices with its open inputs recorded as exceptions instead of
+ *          blocking. The inputs are still named; they just no longer stop the quote.
+ *
+ *  Set to false: the blocks are off. Flip back to true to restore the hard gate. */
+const STRICT_GATE = false;
 
 type Screen = "rfq" | "quote" | "queue" | "review" | "inspect" | "drawings" | "specs" | "procs";
 
@@ -484,20 +489,44 @@ function PoReview({ doc, viewer, setViewer, tab, backLabel, onBack, onPrev, onNe
 
 const QCOLS = "92px 74px 132px minmax(180px,1fr) 58px 78px 84px 74px 84px 190px";
 
+/** With the gate on, an unresolved line is refused. With it off, the same line prices
+ *  and its open inputs are carried as an exception instead of a block. */
+function quoteChip(key: string) {
+  if (key === "ready") return S.ready;
+  if (key === "info") return S.info;
+  return STRICT_GATE ? S.open : S.review;
+}
+function quoteLabel(key: string, label: string) {
+  if (key === "ready" || key === "info" || STRICT_GATE) return label;
+  return `priced — ${label}`;
+}
+
 function QuoteView({ onOpen }: { onOpen: (i: number, from?: string) => void }) {
+  const readyCount = QUOTE_ROWS.filter((r: any[]) => r[9] === "ready").length;
+  const exceptionCount = QUOTE_ROWS.filter((r: any[]) => r[9] === "open").length;
+  const openInputCount = QUOTE_ROWS
+    .filter((r: any[]) => r[9] === "open")
+    .reduce((n: number, r: any[]) => n + (parseInt(String(r[10]), 10) || 0), 0);
+
   return (
     <div style={{ padding: "22px 26px 40px" }}>
       <PageHead
         title="Quote"
         meta="11 quoted lines · one raised against parts received without a purchase order"
-        lede="A line prices only when every quoting input is resolved. Where the rate card has no published row, the line is routed rather than interpolated."
+        lede={STRICT_GATE
+          ? "A line prices only when every quoting input is resolved. Where the rate card has no published row, the line is routed rather than interpolated."
+          : "Quoting gate is off: lines price with their open inputs carried as exceptions rather than blocking. The open inputs are still recorded on each line — check them before the quote leaves."}
         maxWidth={660}
       />
 
       <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
-        <Stat label="READY TO PRICE" value="1" color={GREEN} />
-        <Stat label="BLOCKED" value="9" color={RED} />
-        <Stat label="OPEN INPUTS" value="21" />
+        <Stat label="READY TO PRICE" value={String(readyCount)} color={GREEN} />
+        <Stat
+          label={STRICT_GATE ? "BLOCKED" : "WITH EXCEPTIONS"}
+          value={String(STRICT_GATE ? exceptionCount : 0)}
+          color={STRICT_GATE ? RED : GREEN}
+        />
+        <Stat label="OPEN INPUTS" value={String(openInputCount)} color={STRICT_GATE ? undefined : OCHRE} />
         <div style={{ flex: 1, minWidth: 240, background: "#FAF6EC", border: "1px solid #EADFC4", borderRadius: 5, padding: "11px 15px" }}>
           <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.08em", color: OCHRE }}>RATE CARD</div>
           <div style={{ fontSize: 11.5, color: "#4A4A52", lineHeight: 1.5, marginTop: 4 }}>
@@ -535,7 +564,7 @@ function QuoteView({ onOpen }: { onOpen: (i: number, from?: string) => void }) {
               <div style={{ padding: "9px 10px", fontFamily: MONO, textAlign: "right" }}>{r[7]}</div>
               <div style={{ padding: "9px 10px", fontFamily: MONO, textAlign: "right" }}>{r[8]}</div>
               <div style={{ padding: "7px 10px" }}>
-                <span style={sx((S as any)[r[9] === "ready" ? "ready" : r[9] === "info" ? "info" : "open"])}>{r[10]}</span>
+                <span style={sx(quoteChip(r[9] as string))}>{quoteLabel(r[9] as string, r[10] as string)}</span>
               </div>
             </div>
           );
