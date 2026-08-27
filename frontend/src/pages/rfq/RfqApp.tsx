@@ -320,8 +320,57 @@ function SurfaceArea() {
     }
   }
 
+  /** Manually keyed envelope, per drawing id, for prints the scanner gave nothing
+   *  usable. Keeps a job moving when the geometry has to come off a caliper. */
+  const [env, setEnv] = useState<Record<number, { l: string; w: string; h: string }>>({});
+
   const rateNum = parseFloat(rate);
   const minNum = parseFloat(lotMin);
+
+  /** Envelope (bounding box) area: 2(LW + LH + WH).
+   *  Deliberately an over-estimate of the wetted area — it ignores holes and
+   *  cut-outs — so a job is never under-quoted while waiting on a real number. */
+  function envelopeArea(l: number, w: number, h: number): number | null {
+    if (![l, w, h].every((n) => Number.isFinite(n) && n > 0)) return null;
+    return 2 * (l * w + l * h + w * h);
+  }
+
+  /** Pull an envelope off the extracted dimensions: the biggest rectangular face
+   *  gives length and width, the overall thickness gives height. */
+  function derivedEnvelope(d: DrawingAnalysis): { l: number; w: number; h: number } | null {
+    const h = d.overall_thickness_in;
+    if (h == null || h <= 0) return null;
+    let best: { l: number; w: number } | null = null;
+    for (const dim of d.dimensions ?? []) {
+      const l = dim.params?.length_in;
+      const w = dim.params?.width_in;
+      if (l == null || w == null || l <= 0 || w <= 0) continue;
+      if (!best || l * w > best.l * best.w) best = { l, w };
+    }
+    return best ? { l: best.l, w: best.w, h } : null;
+  }
+
+  /** The area actually used for pricing, and where it came from. Never returns
+   *  null for a reason that should stop work — an unknown envelope is a prompt
+   *  to key three numbers, not a blocker. */
+  function areaFor(d: DrawingAnalysis): { area: number; source: "measured" | "envelope" } | null {
+    if (d.surface_area_sq_in != null) return { area: d.surface_area_sq_in, source: "measured" };
+    const m = env[d.id];
+    if (m) {
+      const a = envelopeArea(parseFloat(m.l), parseFloat(m.w), parseFloat(m.h));
+      if (a != null) return { area: a, source: "envelope" };
+    }
+    const auto = derivedEnvelope(d);
+    if (auto) {
+      const a = envelopeArea(auto.l, auto.w, auto.h);
+      if (a != null) return { area: a, source: "envelope" };
+    }
+    return null;
+  }
+
+  function setEnvField(id: number, field: "l" | "w" | "h", v: string) {
+    setEnv((prev) => ({ ...prev, [id]: { ...(prev[id] ?? { l: "", w: "", h: "" }), [field]: v.replace(/[^0-9.]/g, "") } }));
+  }
 
   /** area x rate, floored at the lot minimum. Returns null when there is nothing
    *  to compute from, so the column reads "—" rather than a misleading $0.00. */
@@ -431,21 +480,48 @@ function SurfaceArea() {
                 </td>
                 <td style={{ ...TD, fontFamily: MONO, fontSize: 10.5, color: BODY }}>{d.material ?? "—"}</td>
                 <td style={{ ...TD, textAlign: "right", whiteSpace: "nowrap" }}>
-                  <span style={{ fontFamily: MONO, fontSize: 14, fontWeight: 700, color: d.surface_area_sq_in == null ? FAINT : INK }}>
-                    {d.surface_area_sq_in == null ? "—" : d.surface_area_sq_in.toFixed(3)}
-                  </span>
-                  {d.surface_area_confidence ? (
-                    <div style={{ marginTop: 4 }}>
-                      <Chip
-                        text={d.surface_area_confidence}
-                        tone={d.surface_area_confidence === "high" ? "ok" : d.surface_area_confidence === "medium" ? "warn" : "bad"}
-                      />
-                    </div>
-                  ) : null}
+                  {(() => {
+                    const a = areaFor(d);
+                    if (!a) {
+                      const m = env[d.id] ?? { l: "", w: "", h: "" };
+                      return (
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                          <div style={{ display: "flex", gap: 3 }}>
+                            {(["l", "w", "h"] as const).map((f) => (
+                              <input
+                                key={f}
+                                value={m[f]}
+                                onChange={(e) => setEnvField(d.id, f, e.target.value)}
+                                placeholder={f.toUpperCase()}
+                                style={{ width: 38, fontFamily: MONO, fontSize: 10, textAlign: "right", color: INK, border: `1px solid ${LINE}`, borderRadius: 3, padding: "3px 4px", outline: "none" }}
+                              />
+                            ))}
+                          </div>
+                          <Chip text="key envelope" tone="warn" />
+                        </div>
+                      );
+                    }
+                    return (
+                      <>
+                        <span style={{ fontFamily: MONO, fontSize: 14, fontWeight: 700, color: INK }}>{a.area.toFixed(3)}</span>
+                        <div style={{ marginTop: 4 }}>
+                          {a.source === "envelope" ? (
+                            <Chip text="envelope" tone="warn" />
+                          ) : d.surface_area_confidence ? (
+                            <Chip
+                              text={d.surface_area_confidence}
+                              tone={d.surface_area_confidence === "high" ? "ok" : d.surface_area_confidence === "medium" ? "warn" : "bad"}
+                            />
+                          ) : null}
+                        </div>
+                      </>
+                    );
+                  })()}
                 </td>
                 <td style={{ ...TD, textAlign: "right", whiteSpace: "nowrap" }}>
                   {(() => {
-                    const p = priceOf(d.surface_area_sq_in);
+                    const a = areaFor(d);
+                    const p = priceOf(a?.area ?? null);
                     if (!p) return <span style={{ fontFamily: MONO, fontSize: 11, color: FAINT }}>—</span>;
                     return (
                       <>
@@ -456,7 +532,7 @@ function SurfaceArea() {
                   })()}
                 </td>
                 <td style={{ ...TD, fontFamily: MONO, fontSize: 10, color: MUTED, lineHeight: 1.5 }}>
-                  {d.surface_area_method ?? (d.error_detail ? <span style={{ color: RED }}>{d.error_detail}</span> : "—")}
+                  {d.surface_area_method ?? (d.error_detail ? <span style={{ color: RED }}>{d.error_detail}</span> : areaFor(d) ? "bounding box 2(LW+LH+WH) — over-estimates, holes ignored" : "key L/W/H to price now")}
                 </td>
               </tr>
             ))}
