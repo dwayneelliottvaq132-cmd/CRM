@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { colors, fontMono } from "../lib/theme";
 import { fmtDateTime } from "../lib/format";
 import { useMyProfile, useUpdateMyProfile } from "../lib/queries";
-import { Card } from "../components/Table";
-import { Field, FormError, PrimaryButton, TextInput } from "../components/Modal";
+import { FC, FcBanner, FcButton, FcCard, FcCardHeader, FcChip, FcField, FcInput, MONO } from "../components/FcKit";
 
+/** Styled in the Finishing Control language (see components/FcKit), not the original
+ *  ERP theme — these are new screens, so they follow the new design rather than the
+ *  one the pre-existing pages use. The page still renders inside the ERP shell. */
 export function ProfilePage() {
   const { data: me, isLoading } = useMyProfile();
   const updateMe = useUpdateMyProfile();
@@ -21,7 +22,7 @@ export function ProfilePage() {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordSaved, setPasswordSaved] = useState(false);
 
-  if (isLoading || !me) return <div style={{ padding: 20, fontSize: 12 }}>Loading…</div>;
+  if (isLoading || !me) return <div style={{ fontFamily: MONO, fontSize: 11.5, color: FC.muted }}>Loading…</div>;
 
   const effectiveName = detailsTouched ? name : me.name;
   const effectiveInitials = detailsTouched ? initials : me.initials;
@@ -67,58 +68,83 @@ export function ProfilePage() {
   }
 
   return (
-    <section style={{ maxWidth: 520 }}>
-      <Card>
-        <div style={{ padding: "18px 20px", borderBottom: `1px solid ${colors.rowBorder}` }}>
-          <div style={{ fontSize: 14, fontWeight: 700 }}>My Profile</div>
-          <div style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>{me.email} · {me.role}</div>
-        </div>
-        <div style={{ padding: "18px 20px" }}>
-          <FormError message={detailsError} />
-          {detailsSaved ? <div style={{ fontSize: 12, color: colors.green, marginBottom: 14 }}>Profile updated.</div> : null}
-          <Field label="Name">
-            <TextInput value={effectiveName} onChange={(e) => { setDetailsTouched(true); setName(e.target.value); setDetailsSaved(false); }} />
-          </Field>
-          <Field label="Initials">
-            <TextInput maxLength={4} value={effectiveInitials} onChange={(e) => { setDetailsTouched(true); setInitials(e.target.value.toUpperCase()); setDetailsSaved(false); }} />
-          </Field>
+    <section style={{ maxWidth: 560 }}>
+      <FcCard>
+        <FcCardHeader title="My Profile" sub={`${me.email} · ${me.role}`} />
+        <div style={{ padding: "16px 18px" }}>
+          {detailsError ? <FcBanner tone="error">{detailsError}</FcBanner> : null}
+          {detailsSaved ? <FcBanner tone="ok">Profile updated.</FcBanner> : null}
+          <FcField label="Name">
+            <FcInput
+              value={effectiveName}
+              onChange={(e) => {
+                setDetailsTouched(true);
+                setName(e.target.value);
+                setDetailsSaved(false);
+              }}
+            />
+          </FcField>
+          <FcField label="Initials" hint="Shown on travelers and sign-off records.">
+            <FcInput
+              maxLength={4}
+              style={{ width: 90 }}
+              value={effectiveInitials}
+              onChange={(e) => {
+                setDetailsTouched(true);
+                setInitials(e.target.value.toUpperCase());
+                setDetailsSaved(false);
+              }}
+            />
+          </FcField>
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <PrimaryButton onClick={saveDetails} disabled={updateMe.isPending || !detailsTouched}>
-              {updateMe.isPending ? "Saving…" : "Save"}
-            </PrimaryButton>
+            <FcButton tone="primary" onClick={saveDetails} disabled={updateMe.isPending || !detailsTouched}>
+              {updateMe.isPending ? "SAVING…" : "SAVE"}
+            </FcButton>
           </div>
-          <div style={{ fontSize: 11, color: colors.textFaint, marginTop: 16, fontFamily: fontMono }}>
-            Account created {fmtDateTime(me.created_at)} · last sign-in {fmtDateTime(me.last_login_at)}
-            {me.has_pin ? " · shop-floor PIN enrolled" : ""}
+
+          <div style={{ marginTop: 18, paddingTop: 14, borderTop: `1px solid ${FC.line}`, display: "flex", gap: 22, flexWrap: "wrap" }}>
+            <Meta label="Account created" value={fmtDateTime(me.created_at)} />
+            <Meta label="Last sign-in" value={fmtDateTime(me.last_login_at)} />
+            <div>
+              <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", color: FC.faint, marginBottom: 4 }}>SHOP PIN</div>
+              <FcChip kind={me.has_pin ? "ready" : "grey"} text={me.has_pin ? "enrolled" : "none"} />
+            </div>
           </div>
         </div>
-      </Card>
+      </FcCard>
 
-      <div style={{ height: 16 }} />
+      <div style={{ height: 14 }} />
 
-      <Card>
-        <div style={{ padding: "18px 20px", borderBottom: `1px solid ${colors.rowBorder}` }}>
-          <div style={{ fontSize: 14, fontWeight: 700 }}>Change Password</div>
-        </div>
-        <div style={{ padding: "18px 20px" }}>
-          <FormError message={passwordError} />
-          {passwordSaved ? <div style={{ fontSize: 12, color: colors.green, marginBottom: 14 }}>Password changed.</div> : null}
-          <Field label="Current Password">
-            <TextInput type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
-          </Field>
-          <Field label="New Password" hint="At least 8 characters.">
-            <TextInput type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-          </Field>
-          <Field label="Confirm New Password">
-            <TextInput type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-          </Field>
+      <FcCard>
+        <FcCardHeader title="Change Password" sub="Your current password is required to set a new one." />
+        <div style={{ padding: "16px 18px" }}>
+          {passwordError ? <FcBanner tone="error">{passwordError}</FcBanner> : null}
+          {passwordSaved ? <FcBanner tone="ok">Password changed.</FcBanner> : null}
+          <FcField label="Current password">
+            <FcInput type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+          </FcField>
+          <FcField label="New password" hint="At least 8 characters.">
+            <FcInput type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+          </FcField>
+          <FcField label="Confirm new password">
+            <FcInput type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+          </FcField>
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <PrimaryButton onClick={savePassword} disabled={updateMe.isPending}>
-              {updateMe.isPending ? "Saving…" : "Change Password"}
-            </PrimaryButton>
+            <FcButton tone="primary" onClick={savePassword} disabled={updateMe.isPending}>
+              {updateMe.isPending ? "SAVING…" : "CHANGE PASSWORD"}
+            </FcButton>
           </div>
         </div>
-      </Card>
+      </FcCard>
     </section>
+  );
+}
+
+function Meta({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", color: FC.faint, marginBottom: 4 }}>{label.toUpperCase()}</div>
+      <div style={{ fontFamily: MONO, fontSize: 11, color: FC.body }}>{value}</div>
+    </div>
   );
 }

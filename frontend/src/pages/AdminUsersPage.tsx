@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { colors, fontMono } from "../lib/theme";
 import { fmtDateTime } from "../lib/format";
 import { useCreateUser, useEnrollPin, useUpdateUser, useUsers } from "../lib/queries";
-import { Card, Table, type Column } from "../components/Table";
-import { Chip } from "../components/Chip";
-import { Field, FormError, Modal, PrimaryButton, SecondaryButton, Select, TextInput } from "../components/Modal";
+import { Modal } from "../components/Modal";
+import { FC, FcBanner, FcButton, FcCard, FcChip, FcField, FcInput, FcSelect, MONO, SANS } from "../components/FcKit";
 import type { AppUser } from "../lib/types";
+
+/** Styled in the Finishing Control language (see components/FcKit), not the original
+ *  ERP theme. The generic Modal shell is reused as-is — it is chrome, not styling —
+ *  with its contents built from the FC primitives. */
 
 // Mirrors app.schemas.user.ROLES on the backend — the model stores role as free text
 // (see app/models/user.py), so this list exists only to drive the dropdown; the
@@ -14,6 +16,23 @@ const ROLES = ["Quality Manager", "Operator", "Accountant", "Admin"];
 
 function errorDetail(err: unknown): string | undefined {
   return (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+}
+
+function ModalFooter({ onCancel, onSubmit, pending, label, pendingLabel }: {
+  onCancel: () => void;
+  onSubmit: () => void;
+  pending: boolean;
+  label: string;
+  pendingLabel: string;
+}) {
+  return (
+    <>
+      <FcButton onClick={onCancel}>CANCEL</FcButton>
+      <FcButton tone="primary" onClick={onSubmit} disabled={pending}>
+        {pending ? pendingLabel : label}
+      </FcButton>
+    </>
+  );
 }
 
 function CreateUserModal({ onClose }: { onClose: () => void }) {
@@ -46,30 +65,23 @@ function CreateUserModal({ onClose }: { onClose: () => void }) {
     <Modal
       title="New User"
       onClose={onClose}
-      footer={
-        <>
-          <SecondaryButton onClick={onClose}>Cancel</SecondaryButton>
-          <PrimaryButton onClick={handleSubmit} disabled={createUser.isPending}>
-            {createUser.isPending ? "Creating…" : "Create"}
-          </PrimaryButton>
-        </>
-      }
+      footer={<ModalFooter onCancel={onClose} onSubmit={handleSubmit} pending={createUser.isPending} label="CREATE" pendingLabel="CREATING…" />}
     >
-      <FormError message={error} />
-      <Field label="Name">
-        <TextInput autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="J. Smith" />
-      </Field>
-      <Field label="Email">
-        <TextInput type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="j.smith@surftec.com" />
-      </Field>
-      <Field label="Role">
-        <Select value={role} onChange={(e) => setRole(e.target.value)}>
+      {error ? <FcBanner tone="error">{error}</FcBanner> : null}
+      <FcField label="Name">
+        <FcInput autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="J. Smith" />
+      </FcField>
+      <FcField label="Email">
+        <FcInput type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="j.smith@surftec.com" />
+      </FcField>
+      <FcField label="Role">
+        <FcSelect value={role} onChange={(e) => setRole(e.target.value)}>
           {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
-        </Select>
-      </Field>
-      <Field label="Initial Password" hint="At least 8 characters. The user can change it from their profile.">
-        <TextInput type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-      </Field>
+        </FcSelect>
+      </FcField>
+      <FcField label="Initial password" hint="At least 8 characters. The user can change it from their profile.">
+        <FcInput type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+      </FcField>
     </Modal>
   );
 }
@@ -103,38 +115,31 @@ function EditUserModal({ user, onClose }: { user: AppUser; onClose: () => void }
     <Modal
       title={`Edit ${user.name}`}
       onClose={onClose}
-      footer={
-        <>
-          <SecondaryButton onClick={onClose}>Cancel</SecondaryButton>
-          <PrimaryButton onClick={handleSubmit} disabled={updateUser.isPending}>
-            {updateUser.isPending ? "Saving…" : "Save Changes"}
-          </PrimaryButton>
-        </>
-      }
+      footer={<ModalFooter onCancel={onClose} onSubmit={handleSubmit} pending={updateUser.isPending} label="SAVE CHANGES" pendingLabel="SAVING…" />}
     >
-      <FormError message={error} />
-      <Field label="Name">
-        <TextInput value={name} onChange={(e) => setName(e.target.value)} />
-      </Field>
-      <Field label="Email" hint="Email isn't editable here.">
-        <TextInput value={user.email} disabled style={{ background: "#F2F3F1", color: colors.textMuted }} />
-      </Field>
+      {error ? <FcBanner tone="error">{error}</FcBanner> : null}
+      <FcField label="Name">
+        <FcInput value={name} onChange={(e) => setName(e.target.value)} />
+      </FcField>
+      <FcField label="Email" hint="Email isn't editable here.">
+        <FcInput value={user.email} disabled style={{ background: FC.wash, color: FC.muted }} />
+      </FcField>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <Field label="Role">
-          <Select value={role} onChange={(e) => setRole(e.target.value)}>
+        <FcField label="Role">
+          <FcSelect value={role} onChange={(e) => setRole(e.target.value)}>
             {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
-          </Select>
-        </Field>
-        <Field label="Status">
-          <Select value={isActive ? "active" : "inactive"} onChange={(e) => setIsActive(e.target.value === "active")}>
+          </FcSelect>
+        </FcField>
+        <FcField label="Status">
+          <FcSelect value={isActive ? "active" : "inactive"} onChange={(e) => setIsActive(e.target.value === "active")}>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
-          </Select>
-        </Field>
+          </FcSelect>
+        </FcField>
       </div>
-      <Field label="Reset Password" hint="Leave blank to keep the current password.">
-        <TextInput type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-      </Field>
+      <FcField label="Reset password" hint="Leave blank to keep the current password.">
+        <FcInput type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+      </FcField>
     </Modal>
   );
 }
@@ -163,21 +168,40 @@ function PinModal({ user, onClose }: { user: AppUser; onClose: () => void }) {
       title={`Shop-Floor PIN — ${user.name}`}
       onClose={onClose}
       footer={
-        <>
-          <SecondaryButton onClick={onClose}>Cancel</SecondaryButton>
-          <PrimaryButton onClick={handleSubmit} disabled={enrollPin.isPending}>
-            {enrollPin.isPending ? "Saving…" : user.has_pin ? "Rotate PIN" : "Enroll PIN"}
-          </PrimaryButton>
-        </>
+        <ModalFooter
+          onCancel={onClose}
+          onSubmit={handleSubmit}
+          pending={enrollPin.isPending}
+          label={user.has_pin ? "ROTATE PIN" : "ENROL PIN"}
+          pendingLabel="SAVING…"
+        />
       }
     >
-      <FormError message={error} />
-      <Field label="PIN" hint="4-8 digits. Rejected if another operator already uses it.">
-        <TextInput inputMode="numeric" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))} maxLength={8} />
-      </Field>
+      {error ? <FcBanner tone="error">{error}</FcBanner> : null}
+      <FcField label="PIN" hint="4-8 digits. Rejected if another operator already uses it.">
+        <FcInput
+          inputMode="numeric"
+          style={{ width: 120, letterSpacing: "0.25em" }}
+          value={pin}
+          onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+          maxLength={8}
+        />
+      </FcField>
     </Modal>
   );
 }
+
+const TH: React.CSSProperties = {
+  fontFamily: MONO,
+  fontSize: 9,
+  letterSpacing: "0.12em",
+  color: FC.faint,
+  textAlign: "left",
+  padding: "9px 14px",
+  borderBottom: `1px solid ${FC.line}`,
+  whiteSpace: "nowrap",
+};
+const TD: React.CSSProperties = { padding: "9px 14px", borderBottom: `1px solid #F0F0F2`, verticalAlign: "middle" };
 
 export function AdminUsersPage() {
   const { data: users, isLoading } = useUsers();
@@ -185,47 +209,59 @@ export function AdminUsersPage() {
   const [editing, setEditing] = useState<AppUser | null>(null);
   const [pinTarget, setPinTarget] = useState<AppUser | null>(null);
 
-  const columns: Column<AppUser>[] = [
-    { header: "Name", first: true, render: (u) => <span style={{ fontWeight: 600 }}>{u.name}</span> },
-    { header: "Email", render: (u) => <span style={{ fontSize: 12, color: colors.textMuted }}>{u.email}</span> },
-    { header: "Role", render: (u) => <span>{u.role}</span> },
-    { header: "Status", render: (u) => <Chip kind={u.is_active ? "good" : "neutral"} text={u.is_active ? "Active" : "Inactive"} /> },
-    { header: "Shop PIN", render: (u) => <Chip kind={u.has_pin ? "good" : "neutral"} text={u.has_pin ? "Enrolled" : "None"} /> },
-    { header: "Last Sign-In", render: (u) => <span style={{ fontFamily: fontMono, fontSize: 11, color: colors.textMuted }}>{fmtDateTime(u.last_login_at)}</span> },
-    {
-      header: "",
-      last: true,
-      align: "right",
-      render: (u) => (
-        <span style={{ display: "inline-flex", gap: 8 }}>
-          <button
-            onClick={() => setPinTarget(u)}
-            style={{ fontSize: 11, fontWeight: 600, padding: "4px 10px", background: "#FFF", color: colors.accentDefault, border: `1px solid ${colors.cardBorder}`, borderRadius: 4, cursor: "pointer" }}
-          >
-            PIN
-          </button>
-          <button
-            onClick={() => setEditing(u)}
-            style={{ fontSize: 11, fontWeight: 600, padding: "4px 10px", background: "#FFF", color: colors.accentDefault, border: `1px solid ${colors.cardBorder}`, borderRadius: 4, cursor: "pointer" }}
-          >
-            Edit
-          </button>
-        </span>
-      ),
-    },
-  ];
-
   return (
     <section>
-      <div style={{ display: "flex", marginBottom: 14 }}>
-        <button
-          onClick={() => setShowNew(true)}
-          style={{ background: colors.accentDefault, color: "#FFFFFF", border: "none", borderRadius: 5, padding: "8px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
-        >
-          + New User
-        </button>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+        <FcButton tone="primary" onClick={() => setShowNew(true)}>+ NEW USER</FcButton>
+        <div style={{ fontFamily: MONO, fontSize: 10.5, color: FC.muted }}>
+          {users ? `${users.length} account${users.length === 1 ? "" : "s"}` : ""}
+        </div>
       </div>
-      <Card>{isLoading || !users ? <div style={{ padding: 20, fontSize: 12 }}>Loading…</div> : <Table columns={columns} rows={users} keyFn={(u) => String(u.id)} />}</Card>
+
+      <FcCard>
+        {isLoading || !users ? (
+          <div style={{ padding: 20, fontFamily: MONO, fontSize: 11.5, color: FC.muted }}>Loading…</div>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr>
+                  <th style={TH}>NAME</th>
+                  <th style={TH}>EMAIL</th>
+                  <th style={TH}>ROLE</th>
+                  <th style={TH}>STATUS</th>
+                  <th style={TH}>SHOP PIN</th>
+                  <th style={TH}>LAST SIGN-IN</th>
+                  <th style={{ ...TH, textAlign: "right" }} />
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((u) => (
+                  <tr key={u.id} className="fc-row">
+                    <td style={{ ...TD, fontFamily: SANS, fontSize: 12.5, fontWeight: 600, color: FC.ink }}>{u.name}</td>
+                    <td style={{ ...TD, fontFamily: MONO, fontSize: 10.5, color: FC.muted }}>{u.email}</td>
+                    <td style={{ ...TD, fontFamily: MONO, fontSize: 10.5, color: FC.body }}>{u.role}</td>
+                    <td style={TD}><FcChip kind={u.is_active ? "ready" : "grey"} text={u.is_active ? "active" : "inactive"} /></td>
+                    <td style={TD}><FcChip kind={u.has_pin ? "ready" : "grey"} text={u.has_pin ? "enrolled" : "none"} /></td>
+                    <td style={{ ...TD, fontFamily: MONO, fontSize: 10.5, color: FC.muted }}>{fmtDateTime(u.last_login_at)}</td>
+                    <td style={{ ...TD, textAlign: "right", whiteSpace: "nowrap" }}>
+                      <span style={{ display: "inline-flex", gap: 6 }}>
+                        <FcButton onClick={() => setPinTarget(u)}>PIN</FcButton>
+                        <FcButton onClick={() => setEditing(u)}>EDIT</FcButton>
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </FcCard>
+
+      <div style={{ fontFamily: MONO, fontSize: 10, color: FC.faint, marginTop: 12 }}>
+        Deactivating an account blocks sign-in but keeps its sign-off history intact.
+      </div>
+
       {showNew ? <CreateUserModal onClose={() => setShowNew(false)} /> : null}
       {editing ? <EditUserModal user={editing} onClose={() => setEditing(null)} /> : null}
       {pinTarget ? <PinModal user={pinTarget} onClose={() => setPinTarget(null)} /> : null}
