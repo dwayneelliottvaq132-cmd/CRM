@@ -7,8 +7,6 @@ import {
   useDashboard,
   useEquipment,
   useInventory,
-  useInvoices,
-  useNcrs,
   useOrders,
   usePlanningQueue,
   useTanks,
@@ -30,7 +28,6 @@ const NAV_ITEMS: NavItem[] = [
   { key: "travelers", icon: "⛁", label: "Travelers", path: "/travelers" },
   { key: "shopfloor", icon: "▶", label: "Shop Floor", path: "/shopfloor" },
   { key: "chemistry", icon: "⚗", label: "Bath Chemistry", path: "/chemistry" },
-  { key: "compliance", icon: "✓", label: "Compliance", path: "/compliance" },
   { key: "certs", icon: "§", label: "Certs & C of C", path: "/certs" },
   { key: "invoicing", icon: "$", label: "Invoicing", path: "/invoicing" },
   { key: "calibration", icon: "◷", label: "Calibration", path: "/calibration" },
@@ -50,9 +47,8 @@ const TITLES: Record<string, [string, string]> = {
   travelers: ["Job Travelers", "paperless routers · rev-controlled"],
   shopfloor: ["Shop Floor Execution", "operator terminal"],
   chemistry: ["Bath Chemistry & Solution Control", "Nadcap AC7108 solution analysis"],
-  compliance: ["Quality & Compliance", "NCR · CAPA · audit readiness"],
   certs: ["Certifications", "C of C generation & release"],
-  invoicing: ["Invoicing", "QuickBooks Online sync"],
+  invoicing: ["Invoicing", "shipped jobs · billing"],
   calibration: ["Equipment & Calibration", "ISO 10012 controlled instruments"],
   inventory: ["Chemical Inventory", "lot-traced consumables"],
   vendors: ["Approved Vendors", "AS9100 §8.4 external providers"],
@@ -65,18 +61,14 @@ function useBadges(): Record<string, string> {
   const dash = useDashboard();
   const orders = useOrders();
   const tanks = useTanks();
-  const ncrs = useNcrs();
   const certs = useCertQueue();
-  const invoices = useInvoices();
   const equipment = useEquipment();
   const inventory = useInventory();
   const planningQueue = usePlanningQueue();
 
-  const openNcrs = ncrs.data?.filter((n) => n.disposition !== "Closed").length ?? undefined;
   const heldTanks = tanks.data?.filter((t) => t.held).length ?? undefined;
   const overdueEq = equipment.data?.filter((e) => e.due_at && new Date(e.due_at) < new Date()).length ?? undefined;
   const readyCerts = certs.data?.filter((c) => c.ready).length ?? undefined;
-  const unsyncedInv = invoices.data?.filter((i) => i.qb_sync_status !== "Synced").length ?? undefined;
   const attention = inventory.data?.filter((i) => {
     const status = i.expires_at && new Date(i.expires_at) < new Date() ? "Expired" : i.on_hand_qty <= i.reorder_at_qty ? "Reorder" : "OK";
     return status !== "OK";
@@ -90,9 +82,7 @@ function useBadges(): Record<string, string> {
     planning: planningQueue.data ? String(planningQueue.data.length) : "",
     travelers: dash.data ? dash.data.kpis.find((k) => k.key === "wip")?.value ?? "" : "",
     chemistry: heldTanks !== undefined ? String(heldTanks) : "",
-    compliance: openNcrs !== undefined ? String(openNcrs) : "",
     certs: readyCerts !== undefined ? String(readyCerts) : "",
-    invoicing: unsyncedInv !== undefined ? String(unsyncedInv) : "",
     calibration: overdueEq !== undefined ? String(overdueEq) : "",
     inventory: attention !== undefined ? String(attention) : "",
   };
