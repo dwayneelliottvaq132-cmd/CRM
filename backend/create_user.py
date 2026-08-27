@@ -8,6 +8,9 @@ be run again after a re-seed.
     python create_user.py --email a@b.com --name "A. Bee" --role Admin --password s3cret
 
 Roles the app recognises: Quality Manager, Operator, Accountant, Admin.
+Defaults to Admin. Note that role is single-valued: an Admin account is not
+a Quality Manager, and sign-off records carry whatever role the signer holds,
+so use a separate account for shop-floor sign-off if that attribution matters.
 No shop-floor PIN is set: PINs are looked up by hash, and the demo seed already
 uses 1001-5005. Assign one deliberately rather than colliding with an operator.
 """
@@ -26,7 +29,10 @@ def main() -> int:
     p.add_argument("--email", default="dwayne.elliott@texasprecision.net")
     p.add_argument("--name", default="Dwayne Elliott")
     p.add_argument("--initials", default="")
-    p.add_argument("--role", default="Quality Manager")
+    # Admin by default: this account administers the app, and both the admin
+    # screens and every write to the rate card require exactly "Admin".
+    # Pass --role "Quality Manager" for a shop-floor account instead.
+    p.add_argument("--role", default="Admin")
     p.add_argument("--password", default="surftec-demo")
     args = p.parse_args()
 
