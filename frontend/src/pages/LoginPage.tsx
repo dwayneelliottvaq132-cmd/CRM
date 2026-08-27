@@ -12,9 +12,9 @@ export function LoginPage() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // Finishing Control is the app's home; the ERP lives on at its own routes.
-  // A deep link the user was bounced off still wins over the default.
-  if (user) return <Navigate to={(location.state as { from?: string })?.from ?? "/finishing"} replace />;
+  // RFQ Intake is the app's home; Finishing Control and the ERP live on at
+  // their own routes. A deep link the user was bounced off still wins.
+  if (user) return <Navigate to={(location.state as { from?: string })?.from ?? "/rfq"} replace />;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -22,7 +22,7 @@ export function LoginPage() {
     setBusy(true);
     try {
       await login(email, password);
-      navigate("/finishing", { replace: true });
+      navigate("/rfq", { replace: true });
     } catch {
       setError("Incorrect email or password.");
     } finally {

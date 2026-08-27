@@ -6,7 +6,6 @@ import {
   useEmailIntakeStatus,
   useIntegrationInfo,
   usePollEmailIntakeNow,
-  useQbStatusQuery,
 } from "../lib/queries";
 import { Chip } from "../components/Chip";
 import { Card } from "../components/Table";
@@ -23,7 +22,6 @@ const LOG_STATUS_KIND: Record<string, ChipKind> = {
 export function ApiPage() {
   const { data: endpoints } = useApiEndpoints();
   const { data: info } = useIntegrationInfo();
-  const { data: qb } = useQbStatusQuery();
   const { data: emailIntake } = useEmailIntakeStatus();
   const { data: emailLog } = useEmailIntakeLog();
   const pollNow = usePollEmailIntakeNow();
@@ -56,23 +54,6 @@ export function ApiPage() {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <div style={{ background: "#FFFFFF", border: `1px solid ${colors.cardBorder}`, borderRadius: 6, padding: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 6, background: "#2CA01C", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 15 }}>
-              qb
-            </div>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 700 }}>QuickBooks Online</div>
-              <div style={{ fontSize: 11, color: qb?.connected ? colors.green : colors.amber, fontWeight: 600 }}>
-                {qb?.connected ? "● Connected via OAuth2" : qb?.mode === "simulated" ? "○ Simulated (no live credentials)" : "○ Not connected"}
-              </div>
-            </div>
-          </div>
-          <div style={{ fontSize: 11, color: colors.textMuted, marginTop: 10, lineHeight: 1.5 }}>
-            Pushes: invoices, payments, credit memos, new customers. Pulls: payment status, chart of accounts. {qb?.detail}
-          </div>
-        </div>
-
         <div style={{ background: "#FFFFFF", border: `1px solid ${colors.cardBorder}`, borderRadius: 6, padding: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 34, height: 34, borderRadius: 6, background: colors.accentDefault, color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 15 }}>
